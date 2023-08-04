@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+<body>
+    <div class="main">
+        <form action="/api/v1/register" method="POST" class="form" id="form-1">
+            <!-- <div class="spacer"></div> -->
+
+            <div class="form-group">
+                <label for="fullname" class="form-label">Tên đầy đủ</label>
+                <input id="fullname" name="fullname" type="text" placeholder="VD: Sơn Đặng" class="form-control">
+                <span class="form-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="form-label">Email</label>
+                <input id="email" name="email" type="text" placeholder="VD: email@domain.com" class="form-control">
+                <span class="form-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Mật khẩu</label>
+                <input id="password" name="password" type="password" placeholder="Nhập mật khẩu" class="form-control">
+                <span class="form-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="password_confirmation" class="form-label">Nhập lại mật khẩu</label>
+                <input id="password_confirmation" name="password_confirmation" placeholder="Nhập lại mật khẩu" type="password" class="form-control">
+                <span class="form-message"></span>
+            </div>
+
+            <button class="form-submit">Đăng ký</button>
+        </form>
+    </div>
+</body>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"
+      integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="validation.js"></script>
+    <script src="register.js"></script>
+    <script>
+        Validator({
+            form: '#form-1',
+            formGroupSelector: '.form-group',
+            errorSelector: '.form-message',
+            rules: [
+                Validator.isRequired('#fullname'),
+                Validator.isRequired('#email'),
+                Validator.isEmail('#email'),
+                Validator.isRequired('#password'),
+                Validator.minLength('#password', 8, 'Mật khẩu yêu cầu tối thiểu 8 kí tự!'),
+                Validator.isPassword('#password'),
+                Validator.isRequired('#password_confirmation'),
+                Validator.isConfirmed('#password_confirmation', () => {
+                    return document.querySelector('#form-1 #password').value;
+                }, 'Mật khẩu không trùng hớp!')
+            ],
+            onSubmit: function(data) {
+                // console.log(data)
+                register(data.fullname, data.email, data.password)
+            }
+        })
+    </script>
+</html>
