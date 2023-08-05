@@ -32,7 +32,7 @@ const register = async (req, res) => {
     });
     return res.status(201).json({ message: "User registered", newUser });
   } catch (error) {
-    console.log(error);
+    console.log(error)
     res.status(500).json({ message: "An error occurred!" });
   }
 };
@@ -104,9 +104,8 @@ const refresh = async (req, res) => {
     Jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
       if (err) throw err;
       const payload = {
-        id: user.id,
-        role: user.role,
-        email: user.email,
+        id: decoded.id,
+        email: decoded.email,
       };
       const newAccessToken = generateAccessToken(payload);
       res
@@ -119,6 +118,7 @@ const refresh = async (req, res) => {
       .json({ message: "An error occurred while refreshing token!" });
   }
 };
+
 
 const home = (req, res) => {
   res.status(200).json({ message: "homepage" });

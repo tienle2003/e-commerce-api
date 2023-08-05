@@ -1,7 +1,7 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import { hashPassword } from "../middleware/auth.js";
-import { uploadSingleImage, deleteSingleImage } from "../services/cloudinaryService.js";
+import { uploadImage, deleteImage } from "../services/cloudinaryService.js";
 
 const getUserByToken = async (req, res) => {
   try {
@@ -31,7 +31,7 @@ const updateUserByToken = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found!" });
 
     if (req.file) {
-      const result = await uploadSingleImage(req.file.path, {
+      const result = await uploadImage(req.file.path, {
         folder: "avatar",
         resource_type: "image",
       });
@@ -39,7 +39,7 @@ const updateUserByToken = async (req, res) => {
     }
 
     //delete old image on clound
-    await deleteSingleImage(user.avatar);
+    await deleteImage(user.avatar);
 
     await user.update({
       name,
@@ -48,14 +48,15 @@ const updateUserByToken = async (req, res) => {
       address,
       phone,
     });
+    console.log(user);
 
     const updatedUser = await User.findByPk(userId, {
       attributes: { exclude: ["password"] },
     });
-    console.log(updatedUser, "dưới")
+    console.log(updatedUser)
     return res
       .status(200)
-      .json({ message: "Update sucess", data: user });
+      .json({ message: "Update sucess", data: updatedUser });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error!" });
   }
@@ -118,7 +119,7 @@ const deleteUserById = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found!" });
 
     //delete old image on clound
-    await deleteSingleImage(user.avatar, "avatar");
+    await deleteImage(user.avatar);
 
     await user.destroy();
 
@@ -134,14 +135,12 @@ const updateUserById = async (req, res) => {
     const { name, birthDate, address, phone } = req.body;
     let avatar = null;
 
-    const user = await User.findByPk(userId, {
-      attributes: { exclude: ["password"] },
-    });
+    const user = await User.findByPk(userId);
 
     if (!user) return res.status(404).json({ message: "User not found!" });
 
     if (req.file) {
-      const result = await uploadSingleImage(req.file.path, {
+      const result = await uploadImage(req.file.path, {
         folder: "avatar",
         resource_type: "image",
       });
@@ -149,9 +148,9 @@ const updateUserById = async (req, res) => {
     }
 
     //delete old image on clound
-    await deleteSingleImage(user.avatar, "avatar");
+    await deleteImage(user.avatar);
 
-    await user.update(
+    await User.update(
       {
         name,
         avatar,
@@ -159,11 +158,19 @@ const updateUserById = async (req, res) => {
         address,
         phone,
       },
+      {
+        where: {
+          id: userId,
+        },
+      }
     );
 
+    const updatedUser = await User.findByPk(userId, {
+      attributes: { exclude: ["password"] },
+    });
     return res
       .status(200)
-      .json({ message: "Update sucess", data: user });
+      .json({ message: "Update sucess", data: updatedUser });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error!" });
   }

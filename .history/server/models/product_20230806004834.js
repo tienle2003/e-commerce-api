@@ -29,18 +29,18 @@ const Product = sequelize.define(
       type: DataTypes.INTEGER,
       defaultValue:  0,
     },
-    sold: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
-    brand: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    images: {
-      type: DataTypes.JSON,
-      allowNull: false,
-    }
+    // sold: {
+    //   type: DataTypes.INTEGER,
+    //   defaultValue: 0,
+    // },
+    // brand: {
+    //   type: DataTypes.STRING,
+    //   allowNull: false,
+    // },
+    // image: {
+    //   type: DataTypes.JSON,
+    //   allowNull: false,
+    // }
   },
   {
     timestamps: true,

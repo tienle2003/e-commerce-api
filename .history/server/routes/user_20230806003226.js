@@ -24,7 +24,7 @@ router
   .put(fileUploader.single("avatar"), verifyImage, updateUserByToken)
   .post(changePassword);
 
-router.route("/").get(verifyAdmin, getAllUsers);
+router.route("/").get(getAllUsers);
 
 router.use(verifyAdmin);
 router

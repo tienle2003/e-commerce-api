@@ -21,12 +21,12 @@ const deleteSingleImage = async (image, folderName) => {
   }
 };
 
-const uploadMultipleImage = async (files, options) => {
+const uploadMultipleImage = async (files) => {
   try {
     const imageUrlList = [];
     for (let i = 0; i < files.length; i++) {
       const path = files[i].path;
-      const result = await cloudinary.uploader.upload(path, options);
+      const result = await cloudinary.uploader.upload(path);
       imageUrlList.push(result.secure_url);
     }
     return imageUrlList;

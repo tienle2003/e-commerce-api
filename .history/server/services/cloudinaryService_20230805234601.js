@@ -25,9 +25,11 @@ const uploadMultipleImage = async (files, options) => {
   try {
     const imageUrlList = [];
     for (let i = 0; i < files.length; i++) {
+      console.log(files[i].path)
       const path = files[i].path;
       const result = await cloudinary.uploader.upload(path, options);
       imageUrlList.push(result.secure_url);
+      console.log(imageUrlList)
     }
     return imageUrlList;
   } catch (error) {

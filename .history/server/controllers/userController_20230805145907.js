@@ -1,7 +1,7 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import { hashPassword } from "../middleware/auth.js";
-import { uploadSingleImage, deleteSingleImage } from "../services/cloudinaryService.js";
+import { uploadImage, deleteImage } from "../services/cloudinaryService.js";
 
 const getUserByToken = async (req, res) => {
   try {
@@ -31,7 +31,7 @@ const updateUserByToken = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found!" });
 
     if (req.file) {
-      const result = await uploadSingleImage(req.file.path, {
+      const result = await uploadImage(req.file.path, {
         folder: "avatar",
         resource_type: "image",
       });
@@ -39,7 +39,7 @@ const updateUserByToken = async (req, res) => {
     }
 
     //delete old image on clound
-    await deleteSingleImage(user.avatar);
+    await deleteImage(user.avatar);
 
     await user.update({
       name,
@@ -118,7 +118,7 @@ const deleteUserById = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found!" });
 
     //delete old image on clound
-    await deleteSingleImage(user.avatar, "avatar");
+    await deleteImage(user.avatar);
 
     await user.destroy();
 
@@ -141,7 +141,7 @@ const updateUserById = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found!" });
 
     if (req.file) {
-      const result = await uploadSingleImage(req.file.path, {
+      const result = await uploadImage(req.file.path, {
         folder: "avatar",
         resource_type: "image",
       });
@@ -149,7 +149,7 @@ const updateUserById = async (req, res) => {
     }
 
     //delete old image on clound
-    await deleteSingleImage(user.avatar, "avatar");
+    await deleteImage(user.avatar);
 
     await user.update(
       {

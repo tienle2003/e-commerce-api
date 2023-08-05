@@ -21,7 +21,7 @@ router.use(verifyAccessToken);
 router
   .route("/me")
   .get(getUserByToken)
-  .put(fileUploader.single("avatar"), verifyImage, updateUserByToken)
+  .put(fileUploader.single("image"), verifyImage, updateUserByToken)
   .post(changePassword);
 
 router.route("/").get(verifyAdmin, getAllUsers);
@@ -31,6 +31,6 @@ router
   .route("/:id")
   .get(getUserById)
   .delete(deleteUserById)
-  .put(fileUploader.single("avatar"), verifyImage, updateUserById);
+  .put(fileUploader.single("image"), verifyImage, updateUserById);
 
 export default router;

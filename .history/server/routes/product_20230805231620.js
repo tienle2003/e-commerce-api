@@ -16,8 +16,6 @@ router
   .get(getAllProducts)
   .post(
     verifyAdmin,
-    fileUploader.array("images"),
-    verifyImage,
     createProduct
   );
 router

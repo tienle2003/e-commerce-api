@@ -88,7 +88,8 @@ const createProduct = async (req, res) => {
         folder: "products",
         resource_type: "image",
       });
-      images = result;
+      images = JSON.stringify(result);
+      console.log(images);
     }
     const product = await Product.create({
       name,

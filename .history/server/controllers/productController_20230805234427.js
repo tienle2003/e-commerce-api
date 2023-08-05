@@ -20,11 +20,11 @@ const getAllProducts = async (req, res) => {
   }
 
   if (quantity) {
-    query.quantity = setFilter(quantity);
+    query.quantity = setFilter(quantity)
   }
 
   if (price) {
-    query.price = setFilter(price);
+    query.price = setFilter(price)
   }
 
   if (search) {
@@ -81,14 +81,15 @@ const getProductById = async (req, res) => {
 
 const createProduct = async (req, res) => {
   const { name, price, description, color, quantity, brand, sold } = req.body;
-  let images = null;
+  let image = null
   try {
-    if (req.files) {
+    if(req.files) {
+      console.log(req.files)
       const result = await uploadMultipleImage(req.files, {
         folder: "products",
         resource_type: "image",
       });
-      images = result;
+      image = result
     }
     const product = await Product.create({
       name,
@@ -98,7 +99,7 @@ const createProduct = async (req, res) => {
       quantity,
       brand,
       sold,
-      images,
+      image
     });
     return res
       .status(201)
@@ -110,8 +111,7 @@ const createProduct = async (req, res) => {
 
 const updateProductById = async (req, res) => {
   const { id } = req.params;
-  const { name, price, description, color, quantity, sold, brand, images } =
-    req.body;
+  const { name, price, description, color, quantity } = req.body;
   try {
     const product = await Product.findByPk(id);
     if (!product)
@@ -123,9 +123,6 @@ const updateProductById = async (req, res) => {
       description,
       color,
       quantity,
-      sold,
-      brand,
-      images,
     });
 
     return res

@@ -69,6 +69,7 @@ const getAllProducts = async (req, res) => {
 
 const getProductById = async (req, res) => {
   const { id } = req.params;
+  console.log(id)
   try {
     const product = await Product.findByPk(id);
     if (!product)
@@ -88,7 +89,8 @@ const createProduct = async (req, res) => {
         folder: "products",
         resource_type: "image",
       });
-      images = result;
+      images = JSON.stringify(result);
+      console.log(images);
     }
     const product = await Product.create({
       name,

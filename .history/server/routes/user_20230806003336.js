@@ -17,14 +17,14 @@ import {
 import { fileUploader } from "../configs/cloudinary.config.js";
 const router = express.Router();
 
-router.use(verifyAccessToken);
+// router.use(verifyAccessToken);
 router
   .route("/me")
   .get(getUserByToken)
   .put(fileUploader.single("avatar"), verifyImage, updateUserByToken)
   .post(changePassword);
 
-router.route("/").get(verifyAdmin, getAllUsers);
+router.route("/").get(getAllUsers);
 
 router.use(verifyAdmin);
 router
