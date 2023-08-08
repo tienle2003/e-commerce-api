@@ -41,7 +41,6 @@ const deleteMutipleImages = async (imageUrlList, folderName) => {
     const publicId = imageUrlList.map(imageUrl => {
       return folderName + "/" + imageUrl.split("/").slice(-1)[0].split(".")[0]
     })
-    await cloudinary.api.delete_resources(publicId);
   } catch (error) {
     console.error("Error deleting image to Cloudinary!", error);
     throw error;

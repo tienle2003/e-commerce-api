@@ -1,9 +1,6 @@
 import Product from "../models/product.js";
 import { Op } from "sequelize";
-import {
-  uploadMultipleImage,
-  deleteMutipleImages,
-} from "../services/cloudinaryService.js";
+import { uploadMultipleImage } from "../services/cloudinaryService.js";
 
 const getAllProducts = async (req, res) => {
   const {
@@ -113,23 +110,12 @@ const createProduct = async (req, res) => {
 
 const updateProductById = async (req, res) => {
   const { id } = req.params;
-  const { name, price, description, color, quantity, sold, brand } = req.body;
-  let images = null;
+  const { name, price, description, color, quantity, sold, brand, images } =
+    req.body;
   try {
     const product = await Product.findByPk(id);
     if (!product)
       return res.status(404).json({ message: "Product not found!" });
-
-    //delete old image on cloud
-    await deleteMutipleImages(product.images, "products");
-
-    if (req.files) {
-      const result = await uploadMultipleImage(req.files, {
-        folder: "products",
-        resource_type: "image",
-      });
-      images = result;
-    }
 
     await product.update({
       name,

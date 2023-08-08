@@ -16,7 +16,7 @@ router
   .get(getAllProducts)
   .post(
     verifyAdmin,
-    fileUploader.array("images"),
+    fileUploader.array("products", 2),
     verifyImage,
     createProduct
   );
@@ -25,7 +25,7 @@ router
   .get(getProductById)
   .put(
     verifyAdmin,
-    fileUploader.array("images"),
+    fileUploader.array("products"),
     verifyImage,
     updateProductById
   )
