@@ -9,11 +9,7 @@ import {
   updateUserById,
 } from "../controllers/userController.js";
 import verifyImage from "../middleware/user.js";
-import {
-  verifyAccessToken,
-  verifyAdmin,
-  verifyUser,
-} from "../middleware/auth.js";
+import { verifyAccessToken, verifyAdmin } from "../middleware/auth.js";
 import { fileUploader } from "../configs/cloudinary.config.js";
 const router = express.Router();
 

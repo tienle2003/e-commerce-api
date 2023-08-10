@@ -1,5 +1,5 @@
-import sequelize from "./index.js";
-import { Sequelize, DataTypes } from "sequelize";
+import sequelize from "../configs/configDatabase.js";
+import { DataTypes } from "sequelize";
 
 const User = sequelize.define(
   "User",
@@ -25,7 +25,7 @@ const User = sequelize.define(
     role: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: 'user',
+      defaultValue: "user",
     },
     avatar: {
       type: DataTypes.STRING,
@@ -42,13 +42,14 @@ const User = sequelize.define(
     phone: {
       type: DataTypes.STRING,
       allowNull: true,
-    }
+    },
   },
   {
     timestamps: true,
-    createdAt: "created_at", 
+    createdAt: "created_at",
     updatedAt: "updated_at",
-  }
+  },
 );
+
 
 export default User;

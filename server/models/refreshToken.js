@@ -1,6 +1,6 @@
-import sequelize from "./index.js";
+import sequelize from "../configs/configDatabase.js";
 import User from "./user.js";
-import { Sequelize, DataTypes } from "sequelize";
+import { DataTypes } from "sequelize";
 
 const RefreshToken = sequelize.define("Refresh_Token", {
   id: {

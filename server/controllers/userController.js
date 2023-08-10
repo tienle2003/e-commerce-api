@@ -117,7 +117,7 @@ const deleteUserById = async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found!" });
 
-    //delete old image on clound
+    //delete old image on cloud
     await deleteSingleImage(user.avatar, "avatar");
 
     await user.destroy();

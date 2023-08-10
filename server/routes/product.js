@@ -1,6 +1,6 @@
 import express from "express";
 const router = express.Router();
-import { verifyAdmin } from "../middleware/auth.js";
+import { verifyAdmin, verifyUser } from "../middleware/auth.js";
 import verifyImage from "../middleware/user.js";
 import { fileUploader } from "../configs/cloudinary.config.js";
 import {
