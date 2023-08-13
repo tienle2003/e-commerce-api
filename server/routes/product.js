@@ -1,6 +1,6 @@
 import express from "express";
 const router = express.Router();
-import { verifyAdmin, verifyUser } from "../middleware/auth.js";
+import { verifyAdmin } from "../middleware/auth.js";
 import verifyImage from "../middleware/user.js";
 import { fileUploader } from "../configs/cloudinary.config.js";
 import {
@@ -14,12 +14,7 @@ import {
 router
   .route("/")
   .get(getAllProducts)
-  .post(
-    verifyAdmin,
-    fileUploader.array("images"),
-    verifyImage,
-    createProduct
-  );
+  .post(verifyAdmin, fileUploader.array("images"), verifyImage, createProduct);
 router
   .route("/:id")
   .get(getProductById)

@@ -1,4 +1,5 @@
 import Product from "../models/product.js";
+import Review from "../models/review.js";
 import { Op } from "sequelize";
 import {
   uploadMultipleImage,
@@ -171,4 +172,5 @@ export {
   createProduct,
   updateProductById,
   deleteProductById,
+  createReview,
 };

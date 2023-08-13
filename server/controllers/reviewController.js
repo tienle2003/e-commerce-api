@@ -1,3 +1,4 @@
+import sequelize from "../configs/configDatabase.js";
 import Review from "../models/review.js";
 import User from "../models/user.js";
 
@@ -6,11 +7,11 @@ const getReviews = async (req, res) => {
   const { page = 1, limit = 5, rating } = req.query;
   const filterOptions = {
     product_id: productId,
-  }
+  };
 
-  if(rating !== "" && rating !== undefined) filterOptions.rating = rating
+  if (rating !== "" && rating !== undefined) filterOptions.rating = rating;
   try {
-    const reviews = await Review.findAll({
+    const reviews = await Review.findAndCountAll({
       where: filterOptions,
       include: [
         {
@@ -23,13 +24,18 @@ const getReviews = async (req, res) => {
       offset: (page - 1) * limit,
       limit: +limit,
     });
+    const totalPages = Math.ceil(reviews.count / limit);
 
-    if (reviews.length === 0)
+    if (reviews.count === 0 || +page > totalPages)
       return res
         .status(404)
         .json({ message: "No reviews found for this product!" });
 
-    return res.status(200).json({ data: reviews });
+    return res.status(200).json({
+      currentPage: +page,
+      totalPages: totalPages,
+      data: reviews.rows,
+    });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error!" });
   }
@@ -71,4 +77,19 @@ const createReview = async (req, res) => {
   }
 };
 
-export { createReview, getReviews };
+const deleteReviewById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const review = await Review.findByPk(id);
+
+    if (!review)
+      return res.status(404).json({ message: "Product not found!" });
+
+    await review.destroy();
+    return res.status(200).json({ message: "Product deleted successfully!" });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error!" });
+  }
+};
+
+export { createReview, getReviews, deleteReviewById };
