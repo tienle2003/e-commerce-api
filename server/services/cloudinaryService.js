@@ -38,6 +38,7 @@ const deleteSingleImage = async (image, folderName) => {
 
 const deleteMutipleImages = async (imageUrlList, folderName) => {
   try {
+    if(!Array.isArray(imageUrlList)) return deleteSingleImage(imageUrlList, folderName)
     const publicId = imageUrlList.map(imageUrl => {
       return folderName + "/" + imageUrl.split("/").slice(-1)[0].split(".")[0]
     })

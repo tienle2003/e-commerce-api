@@ -10,6 +10,6 @@ cloudinary.config({
 });
 
 const storage = multer.diskStorage({});
-const fileUploader = multer({ storage: storage });
+const fileUploader = multer({ storage });
 
 export { cloudinary, fileUploader };

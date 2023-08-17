@@ -32,4 +32,6 @@ import Product from "./product.js";
 Review.belongsTo(User, { foreignKey: "user_id", as: "user" });
 Review.belongsTo(Product, { foreignKey: "product_id", as: "product" });
 
-User.hasMany(Review, {foreignKey: "user_id", as: "reviews"})
+User.hasMany(Review, { foreignKey: "user_id", as: "reviews" });
+
+export { Review, User };

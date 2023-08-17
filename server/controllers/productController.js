@@ -1,5 +1,5 @@
 import Product from "../models/product.js";
-import Review from "../models/review.js";
+import Category from "../models/category.js";
 import { Op } from "sequelize";
 import {
   uploadMultipleImage,
@@ -23,15 +23,15 @@ const getAllProducts = async (req, res) => {
     return Array.isArray(field) ? { [Op.between]: field } : { [Op.lte]: field };
   }
 
-  if (quantity) {
+  if (quantity !== null && quantity !== undefined && quantity !== "") {
     query.quantity = setFilter(quantity);
   }
 
-  if (price) {
+  if (price !== null && price !== undefined && price !== "") {
     query.price = setFilter(price);
   }
 
-  if (search) {
+  if (search !== null && search !== undefined && search !== "") {
     const searchQuery = {
       [Op.or]: [
         { name: { [Op.like]: `%${search}%` } },
@@ -44,7 +44,7 @@ const getAllProducts = async (req, res) => {
     paramQuerySQL.where = query;
   }
   //Sorting
-  if (sort !== "" && sort !== undefined) {
+  if (sort !== null && sort !== undefined && sort !== "") {
     const Fields = sort.split(",");
     const sortQuery = Fields.map((field) => {
       return field.startsWith("-")
@@ -84,10 +84,19 @@ const getProductById = async (req, res) => {
 };
 
 const createProduct = async (req, res) => {
-  const { name, price, description, color, quantity, brand, sold } = req.body;
+  const {
+    name,
+    price,
+    description,
+    color,
+    quantity,
+    brand,
+    sold,
+    category_id,
+  } = req.body;
   let images = null;
   try {
-    if (req.files) {
+    if (req.files.length > 0) {
       const result = await uploadMultipleImage(req.files, {
         folder: "products",
         resource_type: "image",
@@ -103,6 +112,7 @@ const createProduct = async (req, res) => {
       brand,
       sold,
       images,
+      category_id,
     });
     return res
       .status(201)
@@ -114,9 +124,23 @@ const createProduct = async (req, res) => {
 
 const updateProductById = async (req, res) => {
   const { id } = req.params;
-  const { name, price, description, color, quantity, sold, brand } = req.body;
+  const {
+    name,
+    price,
+    description,
+    color,
+    quantity,
+    sold,
+    brand,
+    categoryName,
+  } = req.body;
   let images = null;
+
   try {
+    const category = await Category.findOne({ where: { name: categoryName } });
+    if (!category)
+      return res.status(404).json({ message: "Category not found!" });
+
     const product = await Product.findByPk(id);
     if (!product)
       return res.status(404).json({ message: "Product not found!" });
@@ -131,6 +155,7 @@ const updateProductById = async (req, res) => {
       });
       images = result;
     }
+    console.log(req.files)
 
     await product.update({
       name,
@@ -141,6 +166,7 @@ const updateProductById = async (req, res) => {
       sold,
       brand,
       images,
+      category_id: category.id,
     });
 
     return res
@@ -172,5 +198,4 @@ export {
   createProduct,
   updateProductById,
   deleteProductById,
-  createReview,
 };

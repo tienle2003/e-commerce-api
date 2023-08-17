@@ -12,18 +12,14 @@ import {
 } from "../controllers/productController.js";
 
 router
+  .route("/:id")
+  .post(verifyAdmin, fileUploader.array("images"), verifyImage, updateProductById)
+  .get(getProductById)
+  .delete(verifyAdmin, deleteProductById);
+  
+router
   .route("/")
   .get(getAllProducts)
   .post(verifyAdmin, fileUploader.array("images"), verifyImage, createProduct);
-router
-  .route("/:id")
-  .get(getProductById)
-  .put(
-    verifyAdmin,
-    fileUploader.array("images"),
-    verifyImage,
-    updateProductById
-  )
-  .delete(verifyAdmin, deleteProductById);
 
 export default router;
