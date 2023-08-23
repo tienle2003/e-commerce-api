@@ -13,13 +13,23 @@ import {
 
 router
   .route("/:id")
-  .post(verifyAdmin, fileUploader.array("images"), verifyImage, updateProductById)
   .get(getProductById)
-  .delete(verifyAdmin, deleteProductById);
-  
+  .delete(verifyAdmin, deleteProductById)
+  .post(
+    verifyAdmin,
+    fileUploader.array("images", 5),
+    verifyImage,
+    updateProductById
+  );
+
 router
   .route("/")
   .get(getAllProducts)
-  .post(verifyAdmin, fileUploader.array("images"), verifyImage, createProduct);
+  .post(
+    verifyAdmin,
+    fileUploader.array("images", 5),
+    verifyImage,
+    createProduct
+  );
 
 export default router;

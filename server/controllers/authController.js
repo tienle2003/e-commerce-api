@@ -46,16 +46,14 @@ const login = async (req, res) => {
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch)
       return res.status(401).json({ message: "Invalid email or password!" });
-    const accessToken = generateAccessToken({
+
+    const payload = {
       id: user.id,
       role: user.role,
       email: user.email,
-    });
-    const refreshToken = generateRefreshToken({
-      id: user.id,
-      role: user.role,
-      email: user.email,
-    });
+    }
+    const accessToken = await generateAccessToken(payload);
+    const refreshToken = await generateRefreshToken(payload);
 
     const expiresIn = parseInt(process.env.REFRESH_TOKEN_EXPIRES);
     const expiresAt = moment()
@@ -90,7 +88,7 @@ const logout = async (req, res) => {
 
 const refresh = async (req, res) => {
   try {
-    let token = req.body.refreshToken || req.headers["refresh-token"];
+    let token = req.headers["refresh-token"];
     if (!token || !token.startsWith("Bearer ")) {
       return res.status(401).json({ message: "No refresh token provided!" });
     }
@@ -120,8 +118,5 @@ const refresh = async (req, res) => {
   }
 };
 
-const home = (req, res) => {
-  res.status(200).json({ message: "homepage" });
-};
 
-export { register, login, logout, home, refresh };
+export { register, login, logout, refresh };

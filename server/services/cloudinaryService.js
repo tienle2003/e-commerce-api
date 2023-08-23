@@ -18,6 +18,8 @@ const uploadMultipleImage = async (files, options) => {
       const result = await cloudinary.uploader.upload(path, options);
       imageUrlList.push(result.secure_url);
     }
+    if (imageUrlList.length === 0) return null;
+    if (imageUrlList.length === 1) return imageUrlList[0];
     return imageUrlList;
   } catch (error) {
     console.error("Error uploading image to Cloudinary!", error);
@@ -31,21 +33,27 @@ const deleteSingleImage = async (image, folderName) => {
     if (publicId)
       await cloudinary.uploader.destroy(`${folderName}/${publicId}`);
   } catch (error) {
-    console.error("Error deleting image to Cloudinary!", error);
+    console.error("Error deleting image to Cloudinary!", error, 1);
     throw error;
   }
 };
 
 const deleteMutipleImages = async (imageUrlList, folderName) => {
   try {
-    if(!Array.isArray(imageUrlList)) return deleteSingleImage(imageUrlList, folderName)
-    const publicId = imageUrlList.map(imageUrl => {
-      return folderName + "/" + imageUrl.split("/").slice(-1)[0].split(".")[0]
-    })
+    if (!Array.isArray(imageUrlList))
+      return deleteSingleImage(imageUrlList, folderName);
+    const publicId = imageUrlList.map((imageUrl) => {
+      return folderName + "/" + imageUrl.split("/").slice(-1)[0].split(".")[0];
+    });
     await cloudinary.api.delete_resources(publicId);
   } catch (error) {
-    console.error("Error deleting image to Cloudinary!", error);
+    console.error("Error deleting image to Cloudinary!", error, 2);
     throw error;
   }
 };
-export { uploadSingleImage, deleteSingleImage, uploadMultipleImage, deleteMutipleImages };
+export {
+  uploadSingleImage,
+  deleteSingleImage,
+  uploadMultipleImage,
+  deleteMutipleImages,
+};

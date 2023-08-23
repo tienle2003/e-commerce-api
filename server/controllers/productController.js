@@ -94,14 +94,13 @@ const createProduct = async (req, res) => {
     sold,
     category_id,
   } = req.body;
-  let images = null;
+  let images;
   try {
     if (req.files.length > 0) {
-      const result = await uploadMultipleImage(req.files, {
+      images = await uploadMultipleImage(req.files, {
         folder: "products",
         resource_type: "image",
       });
-      images = result;
     }
     const product = await Product.create({
       name,
@@ -134,7 +133,7 @@ const updateProductById = async (req, res) => {
     brand,
     categoryName,
   } = req.body;
-  let images = null;
+  let images;
 
   try {
     const category = await Category.findOne({ where: { name: categoryName } });
@@ -146,16 +145,14 @@ const updateProductById = async (req, res) => {
       return res.status(404).json({ message: "Product not found!" });
 
     //delete old image on cloud
-    await deleteMutipleImages(product.images, "products");
+    if (product.images) await deleteMutipleImages(product.images, "products");
 
     if (req.files) {
-      const result = await uploadMultipleImage(req.files, {
+      images = await uploadMultipleImage(req.files, {
         folder: "products",
         resource_type: "image",
       });
-      images = result;
     }
-    console.log(req.files)
 
     await product.update({
       name,
