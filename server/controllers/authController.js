@@ -3,6 +3,8 @@ import Jwt from "jsonwebtoken";
 import moment from "moment/moment.js";
 import User from "../models/user.js";
 import RefreshToken from "../models/refreshToken.js";
+import sendMail from "../services/nodemailerService.js";
+
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -16,6 +18,7 @@ dotenv.config();
 const register = async (req, res) => {
   const { name, email, password } = req.body;
   try {
+    //check email exists or not
     const existingUser = await User.findOne({
       where: {
         email: email,
@@ -24,13 +27,54 @@ const register = async (req, res) => {
 
     if (existingUser)
       return res.status(409).json({ message: "This email is aready in use!" });
+
+    //generate new token
+    const token = Jwt.sign({ email }, process.env.VERIFY_TOKEN_SECRET, {
+      expiresIn: +process.env.VERIFY_TOKEN_EXPIRES,
+    });
+
+    //Send the token to the email you just created
+    sendMail(
+      email,
+      "verify email",
+      "Welcom to MITI Shop",
+      `<h1>Hello ${name}</h1><br><p>You registered an account on MITI Shop, before being able to use your account you need to verify that this is your email address by clicking <a href="http://localhost:3000/api/v1/auth/verify?token=${token}">here</a></p>`
+    );
+
+    //create new user on database
     const hashedPassword = await hashPassword(password);
-    const newUser = await User.create({
+    await User.create({
       name,
       email,
       password: hashedPassword,
     });
-    return res.status(201).json({ message: "User registered", newUser });
+    return res.status(200).json({ message: "Email sent successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "An error occurred!" });
+  }
+};
+
+const verify = async (req, res) => {
+  const { token } = req.query;
+  try {
+    Jwt.verify(token, process.env.VERIFY_TOKEN_SECRET, async (err, decoded) => {
+      if (err)
+        return res
+          .status(410)
+          .json({ message: "verification code has expired or invalid" });
+
+      await User.update(
+        { verified: true },
+        {
+          where: {
+            email: decoded.email,
+            verified: false,
+          },
+        }
+      );
+      return res.status(200).json({ message: "Email verified successfully" });
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "An error occurred!" });
@@ -40,7 +84,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   const { email, password } = req.body;
   try {
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: { email, verified: true } });
     if (!user)
       return res.status(401).json({ message: "Invalid email or password!" });
     const passwordMatch = await bcrypt.compare(password, user.password);
@@ -51,7 +95,7 @@ const login = async (req, res) => {
       id: user.id,
       role: user.role,
       email: user.email,
-    }
+    };
     const accessToken = await generateAccessToken(payload);
     const refreshToken = await generateRefreshToken(payload);
 
@@ -63,7 +107,17 @@ const login = async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "Login successful", accessToken, refreshToken });
+      .cookie("accessToken", accessToken, {
+        maxAge: process.env.ACCESS_TOKEN_EXPIRES * 1000,
+        httpOnly: true,
+        secure: true,
+      })
+      .cookie("refreshToken", refreshToken, {
+        maxAge: process.env.REFRESH_TOKEN_EXPIRES * 1000,
+        httpOnly: true,
+        secure: true,
+      })
+      .json({ message: "Login successful" });
   } catch (error) {
     return res.status(500).json({ message: error });
   }
@@ -118,5 +172,4 @@ const refresh = async (req, res) => {
   }
 };
 
-
-export { register, login, logout, refresh };
+export { register, login, logout, refresh, verify };
