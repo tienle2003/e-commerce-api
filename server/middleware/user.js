@@ -26,7 +26,7 @@ const verifyImage = (req, res, next) => {
       return res.status(400).json({ message: singleImageError });
   }
 
-  if (req.files ?? req.files.length > 0) {
+  if (req.files && req.files.length > 0) {
     for (let i = 0; i < req.files.length; i++) {
       const singleImageError = verifySingleImage(req.files[i]);
       if (singleImageError)

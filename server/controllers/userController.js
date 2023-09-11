@@ -52,7 +52,6 @@ const updateUserByToken = async (req, res) => {
     const updatedUser = await User.findByPk(userId, {
       attributes: { exclude: ["password"] },
     });
-    console.log(updatedUser, "dưới")
     return res
       .status(200)
       .json({ message: "Update sucess", data: user });

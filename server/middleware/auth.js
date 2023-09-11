@@ -42,8 +42,7 @@ const verifyAccessToken = async (req, res, next) => {
 };
 
 const verifyRefreshToken = async (req, res, next) => {
-  const authHeader = req.headers["refresh-token"];
-
+  const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer "))
     return res.status(401).json({ message: "No token provided!" });
   const refreshToken = authHeader.split(" ")[1];
@@ -78,11 +77,23 @@ const verifyAdmin = (req, res, next) => {
 
 const saveRefreshToken = async (userId, refreshToken, expiresAt) => {
   try {
-    const sql = { user_id: userId, token: refreshToken, expires_at: expiresAt };
-    const newRefreshToken = await RefreshToken.create(sql);
-    if (newRefreshToken) console.log("Refresh token saved to the database");
+    const existedRefreshToken = await RefreshToken.findOne({ userId });
+    if (existedRefreshToken)
+      await RefreshToken.updateOne(
+        { token: refreshToken, expies_at: expiresAt },
+        { where: { user_id: userId } }
+      );
+    else {
+      const sql = {
+        user_id: userId,
+        token: refreshToken,
+        expires_at: expiresAt,
+      };
+      const newRefreshToken = await RefreshToken.create(sql);
+      if (newRefreshToken) console.log("Refresh token saved to the database");
+    }
   } catch (error) {
-    return res.status(500).json({ message: "Inserting data error in server!" });
+    console.error("Inserting data error in server!");
   }
 };
 

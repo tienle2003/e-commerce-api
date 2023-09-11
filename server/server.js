@@ -3,9 +3,11 @@ import cors from "cors";
 import initRoutes from "./routes/index.js";
 import sequelize from "../server/configs/configDatabase.js";
 import dotenv from "dotenv";
+import  Jwt  from "jsonwebtoken";
 dotenv.config();
 const port = process.env.PORT || 5000;
 const app = express();
+
 
 app.use(express.json());
 app.use(cors());
