@@ -23,9 +23,10 @@ const User = sequelize.define(
       allowNull: false,
     },
     role: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM,
       allowNull: false,
       defaultValue: "user",
+      values: ["user", "admin"],
     },
     avatar: {
       type: DataTypes.STRING,
@@ -46,14 +47,13 @@ const User = sequelize.define(
     verified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
-    }
+    },
   },
   {
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
-  },
+  }
 );
-
 
 export default User;

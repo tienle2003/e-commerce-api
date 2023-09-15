@@ -4,7 +4,7 @@ import { Op } from "sequelize";
 import {
   uploadMultipleImage,
   deleteMutipleImages,
-} from "../services/cloudinaryService.js";
+} from "../providers/cloudinary.js";
 
 const getAllProducts = async (req, res) => {
   const {

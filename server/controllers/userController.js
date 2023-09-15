@@ -1,7 +1,7 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import { hashPassword } from "../middleware/auth.js";
-import { uploadSingleImage, deleteSingleImage } from "../services/cloudinaryService.js";
+import { uploadSingleImage, deleteSingleImage } from "../providers/cloudinary.js";
 
 const getUserByToken = async (req, res) => {
   try {

@@ -2,8 +2,8 @@ import bcrypt from "bcrypt";
 import Jwt from "jsonwebtoken";
 import moment from "moment/moment.js";
 import User from "../models/user.js";
-import RefreshToken from "../models/refreshToken.js";
-import sendMail from "../services/nodemailerService.js";
+import Token from "../models/token.js";
+import sendVerifyEmail from "../providers/nodemailer.js";
 
 import {
   generateAccessToken,
@@ -28,18 +28,13 @@ const register = async (req, res) => {
     if (existingUser)
       return res.status(409).json({ message: "This email is aready in use!" });
 
-    //generate new token
+    // //generate new token
     const token = Jwt.sign({ email }, process.env.VERIFY_TOKEN_SECRET, {
       expiresIn: +process.env.VERIFY_TOKEN_EXPIRES,
     });
 
     //Send the token to the email you just created
-    sendMail(
-      email,
-      "verify email",
-      "Welcom to MITI Shop",
-      `<h1>Hello ${name}</h1><br><p>You registered an account on MITI Shop, before being able to use your account you need to verify that this is your email address by clicking <a href="http://localhost:3000/api/v1/auth/verify?token=${token}">here</a></p>`
-    );
+    sendVerifyEmail(token, { email, name });
 
     //create new user on database
     const hashedPassword = await hashPassword(password);
@@ -103,7 +98,7 @@ const login = async (req, res) => {
     const expiresAt = moment()
       .add(expiresIn, "seconds")
       .format("YYYY-MM-DD HH:mm:ss");
-    saveRefreshToken(user.id, refreshToken, expiresAt);
+    saveRefreshToken(user.id, refreshToken, 'refresh', expiresAt);
 
     return res
       .status(200)
@@ -124,7 +119,7 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  const refreshToken = req.body.refreshToken || req.headers["refresh-token"];
+  const refreshToken = req.headers.authorization;
   if (!refreshToken || !refreshToken.startsWith("Bearer ")) {
     return res.status(401).json({ message: "No token provided!" });
   }
@@ -142,16 +137,16 @@ const logout = async (req, res) => {
 
 const refresh = async (req, res) => {
   try {
-    let token = req.headers["refresh-token"];
+    let token = req.headers.authorization;
     if (!token || !token.startsWith("Bearer ")) {
       return res.status(401).json({ message: "No refresh token provided!" });
     }
     token = token.split(" ")[1];
-    const refreshToken = await RefreshToken.findOne({ where: { token } });
+    const refreshToken = await Token.findOne({ where: { token } });
     if (!refreshToken)
       return res
         .status(401)
-        .json({ message: "Refresh token is invalid or expired!" });
+        .json({ message: "Refresh token is invalid or has expired!" });
 
     Jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
       if (err) throw err;

@@ -1,6 +1,6 @@
 import Jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import RefreshToken from "../models/refreshToken.js";
+import Token from "../models/token.js";
 
 //Function to hash the password
 const hashPassword = async (password) => {
@@ -27,7 +27,7 @@ const generateRefreshToken = (payload) => {
 };
 
 const verifyAccessToken = async (req, res, next) => {
-  const authHeader = req.headers.authorization || req.body.accessToken;
+  const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer "))
     return res.status(401).json({ message: "No token provided!" });
@@ -75,21 +75,25 @@ const verifyAdmin = (req, res, next) => {
   });
 };
 
-const saveRefreshToken = async (userId, refreshToken, expiresAt) => {
+const saveRefreshToken = async (userId, refreshToken, type, expiresAt) => {
   try {
-    const existedRefreshToken = await RefreshToken.findOne({ userId });
-    if (existedRefreshToken)
-      await RefreshToken.updateOne(
+    const existedRefreshToken = await Token.findOne({ userId });
+    console.log(existedRefreshToken)
+    if (existedRefreshToken) {
+      await Token.update(
         { token: refreshToken, expies_at: expiresAt },
-        { where: { user_id: userId } }
+        { where: { user_id: userId, type } }
       );
+
+    }
     else {
       const sql = {
         user_id: userId,
         token: refreshToken,
+        type: type,
         expires_at: expiresAt,
       };
-      const newRefreshToken = await RefreshToken.create(sql);
+      const newRefreshToken = await Token.create(sql);
       if (newRefreshToken) console.log("Refresh token saved to the database");
     }
   } catch (error) {
@@ -99,7 +103,7 @@ const saveRefreshToken = async (userId, refreshToken, expiresAt) => {
 
 const deleteRefreshToken = async (refreshToken, userId) => {
   try {
-    const destroyed = await RefreshToken.destroy({
+    const destroyed = await Token.destroy({
       where: { token: refreshToken, user_id: userId },
     });
     if (destroyed) console.log("Refresh token deleted successfully");
