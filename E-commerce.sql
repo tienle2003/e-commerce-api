@@ -57,8 +57,14 @@ CREATE TABLE reviews (
 
 CREATE TABLE refresh_tokens (
    id int AUTO_INCREMENT PRIMARY KEY,
-   user_id int,
+   user_id int NOT NULL,
    token varchar(255),
    expires_at timestamp NULL,
    CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+)
+
+CREATE TABLE carts (
+   id int AUTO_INCREMENT PRIMARY KEY,
+   user_id int NOT NULL,
+   product_id varchar(255) NOT NULL,
 )

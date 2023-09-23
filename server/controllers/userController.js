@@ -1,6 +1,6 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
-import { hashPassword } from "../middleware/auth.js";
+import { hashPassword } from "../services/tokenService.js"
 import { uploadSingleImage, deleteSingleImage } from "../providers/cloudinary.js";
 
 const getUserByToken = async (req, res) => {
@@ -49,9 +49,6 @@ const updateUserByToken = async (req, res) => {
       phone,
     });
 
-    const updatedUser = await User.findByPk(userId, {
-      attributes: { exclude: ["password"] },
-    });
     return res
       .status(200)
       .json({ message: "Update sucess", data: user });
