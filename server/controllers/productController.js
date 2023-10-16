@@ -6,7 +6,7 @@ import {
   deleteMutipleImages,
 } from "../providers/cloudinary.js";
 
-const getAllProducts = async (req, res) => {
+const getProducts = async (req, res) => {
   const {
     page = 1,
     limit = 5,
@@ -72,9 +72,9 @@ const getAllProducts = async (req, res) => {
 };
 
 const getProductById = async (req, res) => {
-  const { id } = req.params;
+  const { productId } = req.params;
   try {
-    const product = await Product.findByPk(id);
+    const product = await Product.findByPk(productId);
     if (!product)
       return res.status(404).json({ message: "Product not found!" });
     return res.status(200).json(product);
@@ -96,7 +96,7 @@ const createProduct = async (req, res) => {
   } = req.body;
   let images;
   try {
-    if (req.files.length > 0) {
+    if (req.files) {
       images = await uploadMultipleImage(req.files, {
         folder: "products",
         resource_type: "image",
@@ -117,12 +117,13 @@ const createProduct = async (req, res) => {
       .status(201)
       .json({ message: "Product created successfully!", data: product });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ message: "Internal server error!" });
   }
 };
 
 const updateProductById = async (req, res) => {
-  const { id } = req.params;
+  const { productId } = req.params;
   const {
     name,
     price,
@@ -133,6 +134,7 @@ const updateProductById = async (req, res) => {
     brand,
     categoryName,
   } = req.body;
+  console.log(req.body)
   let images;
 
   try {
@@ -140,7 +142,7 @@ const updateProductById = async (req, res) => {
     if (!category)
       return res.status(404).json({ message: "Category not found!" });
 
-    const product = await Product.findByPk(id);
+    const product = await Product.findByPk(productId);
     if (!product)
       return res.status(404).json({ message: "Product not found!" });
 
@@ -170,14 +172,15 @@ const updateProductById = async (req, res) => {
       .status(200)
       .json({ message: "Product updated successfully!", data: product });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ message: "Internal server error!" });
   }
 };
 
 const deleteProductById = async (req, res) => {
-  const { id } = req.params;
+  const { productId } = req.params;
   try {
-    const product = await Product.findByPk(id);
+    const product = await Product.findByPk(productId);
 
     if (!product)
       return res.status(404).json({ message: "Product not found!" });
@@ -190,7 +193,7 @@ const deleteProductById = async (req, res) => {
 };
 
 export {
-  getAllProducts,
+  getProducts,
   getProductById,
   createProduct,
   updateProductById,

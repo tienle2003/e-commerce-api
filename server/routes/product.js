@@ -2,9 +2,11 @@ import express from "express";
 const router = express.Router();
 import { verifyAdmin } from "../middleware/auth.js";
 import verifyImage from "../middleware/user.js";
+import validate from "../middleware/validate.js";
+import { productValidation } from "../validations/productValidation.js";
 import { fileUploader } from "../configs/cloudinary.config.js";
 import {
-  getAllProducts,
+  getProducts,
   getProductById,
   createProduct,
   updateProductById,
@@ -12,11 +14,16 @@ import {
 } from "../controllers/productController.js";
 
 router
-  .route("/:id")
-  .get(getProductById)
-  .delete(verifyAdmin, deleteProductById)
+  .route("/:productId")
+  .get(validate(productValidation.getProduct), getProductById)
+  .delete(
+    verifyAdmin,
+    validate(productValidation.deleteProduct),
+    deleteProductById
+  )
   .post(
     verifyAdmin,
+    validate(productValidation.updateProduct),
     fileUploader.array("images", 5),
     verifyImage,
     updateProductById
@@ -24,9 +31,10 @@ router
 
 router
   .route("/")
-  .get(getAllProducts)
+  .get(validate(productValidation.getProducts), getProducts)
   .post(
     verifyAdmin,
+    validate(productValidation.createProduct),
     fileUploader.array("images", 5),
     verifyImage,
     createProduct

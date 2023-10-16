@@ -1,7 +1,10 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
-import { hashPassword } from "../services/tokenService.js"
-import { uploadSingleImage, deleteSingleImage } from "../providers/cloudinary.js";
+import { hashPassword } from "../services/tokenService.js";
+import {
+  uploadSingleImage,
+  deleteSingleImage,
+} from "../providers/cloudinary.js";
 
 const getUserByToken = async (req, res) => {
   try {
@@ -20,7 +23,7 @@ const getUserByToken = async (req, res) => {
 
 const updateUserByToken = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     const { name, birthDate, address, phone } = req.body;
     let avatar = null;
 
@@ -49,9 +52,7 @@ const updateUserByToken = async (req, res) => {
       phone,
     });
 
-    return res
-      .status(200)
-      .json({ message: "Update sucess", data: user });
+    return res.status(200).json({ message: "Update sucess", data: user });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error!" });
   }
@@ -95,7 +96,7 @@ const getAllUsers = async (req, res) => {
 
 const getUserById = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const { userId } = req.params;
     const user = await User.findByPk(userId, {
       attributes: { exclude: ["password"] },
     });
@@ -108,7 +109,7 @@ const getUserById = async (req, res) => {
 
 const deleteUserById = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const { userId } = req.params;
     const user = await User.findByPk(userId);
 
     if (!user) return res.status(404).json({ message: "User not found!" });
@@ -126,7 +127,7 @@ const deleteUserById = async (req, res) => {
 
 const updateUserById = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const { userId } = req.params;
     const { name, birthDate, address, phone } = req.body;
     let avatar = null;
 
@@ -147,19 +148,15 @@ const updateUserById = async (req, res) => {
     //delete old image on clound
     await deleteSingleImage(user.avatar, "avatar");
 
-    await user.update(
-      {
-        name,
-        avatar,
-        birth_date: birthDate,
-        address,
-        phone,
-      },
-    );
+    await user.update({
+      name,
+      avatar,
+      birth_date: birthDate,
+      address,
+      phone,
+    });
 
-    return res
-      .status(200)
-      .json({ message: "Update sucess", data: user });
+    return res.status(200).json({ message: "Update sucess", data: user });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error!" });
   }

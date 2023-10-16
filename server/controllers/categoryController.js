@@ -18,7 +18,7 @@ const createCategory = async (req, res) => {
 
 const deleteCategory = async (req, res) => {
   try {
-    const categoryId = req.params.id;
+    const { categoryId } = req.params;
     //find the category to delete
     const categoryToDelete = await Category.findByPk(categoryId);
     if (!categoryToDelete)

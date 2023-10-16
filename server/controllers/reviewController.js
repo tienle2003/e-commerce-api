@@ -3,11 +3,12 @@ import Review from "../models/review.js";
 import User from "../models/user.js";
 
 const getReviews = async (req, res) => {
-  const productId = req.params.id;
+  const { productId } = req.params;
   const { page = 1, limit = 5, rating } = req.query;
   const filterOptions = {
     product_id: productId,
   };
+  console.log(rating);
 
   if (rating !== "" && rating !== undefined) filterOptions.rating = rating;
   try {
@@ -42,8 +43,8 @@ const getReviews = async (req, res) => {
 };
 
 const createReview = async (req, res) => {
-  const userId = req.user.id;
-  const productId = +req.params.id;
+  const { userId } = req.user;
+  const { productId } = req.params;
   const { comment, rating } = req.body;
   try {
     const existingReview = await Review.findOne({
@@ -78,12 +79,11 @@ const createReview = async (req, res) => {
 };
 
 const deleteReviewById = async (req, res) => {
-  const { id } = req.params;
+  const { reviewId } = req.params;
   try {
-    const review = await Review.findByPk(id);
+    const review = await Review.findByPk(reviewId);
 
-    if (!review)
-      return res.status(404).json({ message: "Product not found!" });
+    if (!review) return res.status(404).json({ message: "Review not found!" });
 
     await review.destroy();
     return res.status(200).json({ message: "Product deleted successfully!" });

@@ -56,8 +56,9 @@ const getCarts = async (req, res) => {
 
 const deleteCartById = async (req, res) => {
   try {
+    console.log(typeof req.params.cartId)
     await Cart.destroy({
-      where: { id: req.params.id, user_id: req.user.userId },
+      where: { id: req.params.cartId, user_id: req.user.userId },
     });
     return res.status(200).json({
       message: "product has been deleted from the cart successfully",

@@ -11,22 +11,34 @@ import {
 import verifyImage from "../middleware/user.js";
 import { verifyAccessToken, verifyAdmin } from "../middleware/auth.js";
 import { fileUploader } from "../configs/cloudinary.config.js";
+import validate from "../middleware/validate.js";
+import { userValidation } from "../validations/userValidations.js";
 const router = express.Router();
 
 router.use(verifyAccessToken);
 router
   .route("/me")
   .get(getUserByToken)
-  .put(fileUploader.single("avatar"), verifyImage, updateUserByToken)
-  .post(changePassword);
+  .put(
+    validate(userValidation.updateCurrentUser),
+    fileUploader.single("avatar"),
+    verifyImage,
+    updateUserByToken
+  )
+  .post(validate(userValidation.changePassword), changePassword);
 
 router.route("/").get(verifyAdmin, getAllUsers);
 
 router.use(verifyAdmin);
 router
-  .route("/:id")
-  .get(getUserById)
-  .delete(deleteUserById)
-  .put(fileUploader.single("avatar"), verifyImage, updateUserById);
+  .route("/:userId")
+  .get(validate(userValidation.getUser), getUserById)
+  .delete(validate(userValidation.deleteUser), deleteUserById)
+  .put(
+    validate(userValidation.updateUser),
+    fileUploader.single("avatar"),
+    verifyImage,
+    updateUserById
+  );
 
 export default router;

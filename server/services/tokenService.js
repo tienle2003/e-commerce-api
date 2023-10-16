@@ -1,7 +1,6 @@
 import refreshToken from "../models/refreshToken.js";
 import Jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import moment from "moment/moment.js";
 
 const generateToken = async (payload, secret, expires) => {
   return Jwt.sign(payload, secret, { expiresIn: expires });
@@ -23,10 +22,7 @@ const generateAuthToken = async (user) => {
     process.env.REFRESH_TOKEN_SECRET,
     +process.env.REFRESH_TOKEN_EXPIRES
   );
-  const expiresIn = parseInt(process.env.REFRESH_TOKEN_EXPIRES);
-  const expiresAt = moment()
-    .add(expiresIn, "seconds")
-    .format("YYYY-MM-DD HH:mm:ss");
+  const expiresAt = Date.now() + +process.env.REFRESH_TOKEN_EXPIRES * 1000;
   saveToken(user.id, refreshToken, expiresAt);
   return { accessToken, refreshToken };
 };
@@ -79,7 +75,11 @@ const saveToken = async (userId, token, expiresAt) => {
       where: { user_id: userId },
     });
     if (existedRefreshToken) {
-      await existedRefreshToken.update({ token: token, expies_at: expiresAt });
+      const updated = await existedRefreshToken.update({
+        token: token,
+        expires_at: expiresAt,
+      });
+      if (updated) console.log("success");
     } else {
       const sql = {
         user_id: userId,
@@ -123,5 +123,5 @@ export {
   saveToken,
   deleteToken,
   hashPassword,
-  generateResetPasswordToken
+  generateResetPasswordToken,
 };
