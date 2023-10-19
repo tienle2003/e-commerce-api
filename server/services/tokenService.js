@@ -1,6 +1,7 @@
 import refreshToken from "../models/refreshToken.js";
 import Jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import config from "../configs/config.js";
 
 const generateToken = async (payload, secret, expires) => {
   return Jwt.sign(payload, secret, { expiresIn: expires });
@@ -14,15 +15,15 @@ const generateAuthToken = async (user) => {
   };
   const accessToken = await generateToken(
     { ...payload, type: "access token" },
-    process.env.ACCESS_TOKEN_SECRET,
-    +process.env.ACCESS_TOKEN_EXPIRES
+    config.jwt.accessTokenSecret,
+    config.jwt.accessTokenExpires
   );
   const refreshToken = await generateToken(
     { ...payload, type: "refresh token" },
-    process.env.REFRESH_TOKEN_SECRET,
-    +process.env.REFRESH_TOKEN_EXPIRES
+    config.jwt.refreshTokenSecret,
+    config.jwt.refreshTokenExpires
   );
-  const expiresAt = Date.now() + +process.env.REFRESH_TOKEN_EXPIRES * 1000;
+  const expiresAt = Date.now() + config.jwt.refreshTokenExpires * 1000;
   saveToken(user.id, refreshToken, expiresAt);
   return { accessToken, refreshToken };
 };
@@ -36,8 +37,8 @@ const generateVerifyEmailToken = async (user) => {
   };
   return await generateToken(
     payload,
-    process.env.VERIFY_TOKEN_SECRET,
-    +process.env.VERIFY_TOKEN_EXPIRES
+    config.jwt.verifyTokenSecret,
+    config.jwt.verifyTokenExpires
   );
 };
 
@@ -50,8 +51,8 @@ const generateResetPasswordToken = async (user) => {
   };
   return await generateToken(
     payload,
-    process.env.RESET_TOKEN_SECRET,
-    +process.env.RESET_TOKEN_EXPIRES
+    config.jwt.resetTokenSecret,
+    config.jwt.resetTokenExpires
   );
 };
 
@@ -64,8 +65,8 @@ const generateAccessToken = async (user) => {
   };
   return await generateToken(
     payload,
-    process.env.ACCESS_TOKEN_SECRET,
-    +process.env.ACCESS_TOKEN_EXPIRES
+    config.jwt.accessTokenSecret,
+    config.jwt.accessTokenExpires
   );
 };
 
@@ -107,7 +108,7 @@ const deleteToken = async (userId, token) => {
 
 const hashPassword = async (password) => {
   try {
-    const salt = await bcrypt.genSalt(parseInt(process.env.SALT));
+    const salt = await bcrypt.genSalt(parseInt(config.jwt.salt));
     const hashedPassword = await bcrypt.hash(password, salt);
     return hashedPassword;
   } catch (err) {

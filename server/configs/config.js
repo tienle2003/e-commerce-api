@@ -1,0 +1,66 @@
+import Joi from "joi";
+// import path from "path";
+import dotenv from "dotenv";
+dotenv.config();
+
+const envSchema = Joi.object()
+  .keys({
+    PORT: Joi.number().default(3000),
+    DB_PASSWORD: Joi.string().required(),
+    DB_USER: Joi.string().default("root"),
+    DB_HOST: Joi.string().default("localhost"),
+    DB_SCHEMA: Joi.string().required(),
+    SALT: Joi.number().default(10),
+    ACCESS_TOKEN_SECRET: Joi.string().required(),
+    REFRESH_TOKEN_SECRET: Joi.string().required(),
+    VERIFY_TOKEN_SECRET: Joi.string().required(),
+    RESET_TOKEN_SECRET: Joi.string().required(),
+    ACCESS_TOKEN_EXPIRES: Joi.number().default(3600),
+    REFRESH_TOKEN_EXPIRES: Joi.number().default(604800),
+    VERIFY_TOKEN_EXPIRES: Joi.number().default(120),
+    RESET_TOKEN_EXPIRES: Joi.number().default(120),
+    CLOUDINARY_NAME: Joi.string().required(),
+    CLOUDINARY_KEY: Joi.string().required(),
+    CLOUDINARY_SECRET: Joi.string().required(),
+    EMAIL_PASSWORD: Joi.string().required(),
+    EMAIL_USERNAME: Joi.string().required(),
+    EMAIL_PORT: Joi.number().required(),
+  })
+  .unknown();
+
+const { value: env, error } = envSchema
+  .prefs({ errors: { label: "key" } })
+  .validate(process.env);
+
+if (error) console.log(error.message);
+
+export default {
+  port: env.PORT,
+  database: {
+    password: env.DB_PASSWORD,
+    user: env.DB_USER,
+    host: env.DB_HOST,
+    schema: env.DB_SCHEMA,
+  },
+  jwt: {
+    salt: env.SALT,
+    accessTokenSecret: env.ACCESS_TOKEN_SECRET,
+    refreshTokenSecret: env.REFRESH_TOKEN_SECRET,
+    verifyTokenSecret: env.VERIFY_TOKEN_SECRET,
+    resetTokenSecret: env.RESET_TOKEN_SECRET,
+    accessTokenExpires: env.ACCESS_TOKEN_EXPIRES,
+    refreshTokenExpires: env.REFRESH_TOKEN_EXPIRES,
+    verifyTokenExpires: env.VERIFY_TOKEN_EXPIRES,
+    resetTokenExpires: env.RESET_TOKEN_EXPIRES,
+  },
+  cloudinary: {
+    name: env.CLOUDINARY_NAME,
+    key: env.CLOUDINARY_KEY,
+    secret: env.CLOUDINARY_SECRET,
+  },
+  email: {
+    username: env.EMAIL_USERNAME,
+    password: env.EMAIL_PASSWORD,
+    port: env.EMAIL_PORT,
+  },
+};

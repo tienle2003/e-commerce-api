@@ -1,14 +1,15 @@
 import nodemailer from "nodemailer";
 import mailgen from "mailgen";
+import config from "../configs/config.js";
 
 const sendMail = async (receiver, mailBody, subject) => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
-    port: 465,
+    port: config.email.port,
     secure: true,
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
+      user: config.email.username,
+      pass: config.email.password,
     },
   });
 
@@ -25,7 +26,7 @@ const sendMail = async (receiver, mailBody, subject) => {
 
   const html = mailGenerator.generate(mailBody);
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: config.email.username,
     to: receiver.email,
     html,
     subject,

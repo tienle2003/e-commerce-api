@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import config from "../configs/config.js";
 import Jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import refreshToken from "../models/refreshToken.js";
@@ -54,7 +55,7 @@ const verify = async (req, res) => {
   try {
     Jwt.verify(
       verifyEmailToken,
-      process.env.VERIFY_TOKEN_SECRET,
+      config.jwt.verifyTokenSecret,
       async (err, decoded) => {
         if (err) {
           console.log(err);
@@ -96,12 +97,12 @@ const login = async (req, res) => {
     return res
       .status(200)
       .cookie("accessToken", accessToken, {
-        maxAge: process.env.ACCESS_TOKEN_EXPIRES * 1000,
+        maxAge: config.jwt.accessTokenExpires * 1000,
         httpOnly: true,
         secure: true,
       })
       .cookie("refreshToken", refreshToken, {
-        maxAge: process.env.REFRESH_TOKEN_EXPIRES * 1000,
+        maxAge: config.jwt.refreshTokenExpires * 1000,
         httpOnly: true,
         secure: true,
       })
@@ -143,7 +144,7 @@ const refresh = async (req, res) => {
         .json({ message: "Refresh token is invalid or has expired!" });
     Jwt.verify(
       refreshTokenDoc.token,
-      process.env.REFRESH_TOKEN_SECRET,
+      config.jwt.refreshTokenSecret,
       async (err, decoded) => {
         if (err)
           return res
@@ -154,7 +155,7 @@ const refresh = async (req, res) => {
         return res
           .status(200)
           .cookie("accessToken", newAccessToken, {
-            maxAge: process.env.ACCESS_TOKEN_EXPIRES * 1000,
+            maxAge: config.jwt.accessTokenExpires * 1000,
             httpOnly: true,
             secure: true,
           })
@@ -195,7 +196,7 @@ const resetPassword = async (req, res) => {
       return res.status(400).json({ error: "missing inputs" });
     Jwt.verify(
       resetPasswordToken,
-      process.env.RESET_TOKEN_SECRET,
+      config.jwt.resetTokenSecret,
       async (err, decoded) => {
         if (err) {
           return res
