@@ -19,7 +19,7 @@ const register = {
 
 const verifyEmail = {
   query: Joi.object().keys({
-    token: Joi.string().token().required(),
+    token: Joi.string().required(),
   }),
 };
 
@@ -41,7 +41,7 @@ const resetPassword = {
     password: passwordSchema,
   }),
   query: Joi.object().keys({
-    token: Joi.string().token().required(),
+    token: Joi.string().required(),
   }),
 };
 

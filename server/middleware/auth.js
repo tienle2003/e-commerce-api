@@ -1,4 +1,5 @@
 import Jwt from "jsonwebtoken";
+import config from "../configs/config.js";
 
 
 const verifyAccessToken = async (req, res, next) => {
@@ -8,7 +9,7 @@ const verifyAccessToken = async (req, res, next) => {
     return res.status(401).json({ message: "No token provided!" });
   const accessToken = authHeader.split(" ")[1];
   try {
-    const decoded = Jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+    const decoded = Jwt.verify(accessToken, config.jwt.accessTokenSecret);
     req.user = decoded;
     next();
   } catch (err) {
@@ -22,7 +23,7 @@ const verifyRefreshToken = async (req, res, next) => {
     return res.status(401).json({ message: "No token provided!" });
   const refreshToken = authHeader.split(" ")[1];
   try {
-    const decoded = Jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const decoded = Jwt.verify(refreshToken, config.jwt.refreshTokenSecret);
     req.user = decoded;
     next();
   } catch (err) {
