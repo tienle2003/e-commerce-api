@@ -1,59 +1,50 @@
 import Category from "../models/category.js";
 import Product from "../models/product.js";
+import asyncWrapper from "../utils/asyncWrapper.js";
+import ApiError from "../utils/apiError.js";
+import { StatusCodes } from "http-status-codes";
 
-const createCategory = async (req, res) => {
-  try {
-    const { name } = req.body;
-    const existingCategory = await Category.findOne({ where: { name } });
-    if (existingCategory)
-      return res.status(400).json({ message: "This category already exists" });
-    const newCategory = await Category.create({ name });
-    return res
-      .status(201)
-      .json({ message: "Category created successfully", data: newCategory });
-  } catch (error) {
-    return res.status(500).json({ message: "Internal server error!" });
-  }
-};
+const createCategory = asyncWrapper(async (req, res) => {
+  const { name } = req.body;
+  const existingCategory = await Category.findOne({ where: { name } });
+  if (existingCategory)
+    throw new ApiError(StatusCodes.BAD_REQUEST, "This category already exists");
+  const newCategory = await Category.create({ name });
+  res
+    .status(StatusCodes.CREATED)
+    .json({ message: "Category created successfully", data: newCategory });
+});
 
-const deleteCategory = async (req, res) => {
-  try {
-    const { categoryId } = req.params;
-    //find the category to delete
-    const categoryToDelete = await Category.findByPk(categoryId);
-    if (!categoryToDelete)
-      return res.status(404).json({ message: "Category not found" });
+const deleteCategory = asyncWrapper(async (req, res) => {
+  const { categoryId } = req.params;
+  //find the category to delete
+  const categoryToDelete = await Category.findByPk(categoryId);
+  if (!categoryToDelete)
+    throw new ApiError(StatusCodes.NOT_FOUND, "Category not found");
 
-    //check if the unknown category already exists
-    const unknownCategory = await Category.findOne({
-      where: { name: "unknown" },
-    });
-    //if not, creat a new category named unknown
-    if (!unknownCategory)
-      unknownCategory = await Category.create({ name: "unknown" });
+  //check if the unknown category already exists
+  const unknownCategory = await Category.findOne({
+    where: { name: "unknown" },
+  });
+  //if not, creat a new category named unknown
+  if (!unknownCategory)
+    unknownCategory = await Category.create({ name: "unknown" });
 
-    //move all products from categoryToDelete to unknownCategory
-    await Product.update(
-      { category_id: unknownCategory.id },
-      { where: { category_id: categoryToDelete.id } }
-    );
+  //move all products from categoryToDelete to unknownCategory
+  await Product.update(
+    { category_id: unknownCategory.id },
+    { where: { category_id: categoryToDelete.id } }
+  );
 
-    await categoryToDelete.destroy();
-    return res.status(200).json({ message: "Category deleted successfully" });
-  } catch (error) {
-    return res.status(500).json({ message: "Internal server error!" });
-  }
-};
+  await categoryToDelete.destroy();
+  res.status(StatusCodes.OK).json({ message: "Category deleted successfully" });
+});
 
-const getAllCategories = async (req, res) => {
-  try {
-    const categories = await Category.findAll({ attributes: ["name"] });
-    if (categories.length === 0)
-      return res.status(404).json({ message: "No categories found" });
-    return res.status(200).json(categories);
-  } catch (error) {
-    return res.status(500).json({ message: "Internal server error!" });
-  }
-};
+const getAllCategories = asyncWrapper(async (req, res) => {
+  const categories = await Category.findAll({ attributes: ["name"] });
+  if (categories.length === 0)
+    throw new ApiError(StatusCodes.NOT_FOUND, "No categories found");
+  res.status(StatusCodes.OK).json(categories);
+});
 
 export { createCategory, deleteCategory, getAllCategories };

@@ -5,8 +5,11 @@ import {
   uploadMultipleImage,
   deleteMutipleImages,
 } from "../providers/cloudinary.js";
+import asyncWrapper from "../utils/asyncWrapper.js";
+import ApiError from "../utils/apiError.js";
+import { StatusCodes } from "http-status-codes";
 
-const getProducts = async (req, res) => {
+const getProducts = asyncWrapper(async (req, res) => {
   const {
     page = 1,
     limit = 5,
@@ -57,33 +60,25 @@ const getProducts = async (req, res) => {
   //Pagination
   paramQuerySQL.offset = (page - 1) * limit;
   paramQuerySQL.limit = +limit;
-  try {
-    const products = await Product.findAndCountAll(paramQuerySQL);
-    const totalPages = Math.ceil(products.count / limit);
+  const products = await Product.findAndCountAll(paramQuerySQL);
+  const totalPages = Math.ceil(products.count / limit);
 
-    if (products.count === 0 || page > totalPages)
-      return res.status(404).json({ message: "Products not found!" });
-    return res
-      .status(200)
-      .json({ currentPage: +page, totalPages, data: products.rows });
-  } catch (error) {
-    return res.status(500).json({ message: "Internal server error!" });
-  }
-};
+  if (products.count === 0 || page > totalPages)
+    throw new ApiError(StatusCodes.NOT_FOUND, "Products not found!");
+  res
+    .status(StatusCodes.OK)
+    .json({ currentPage: +page, totalPages, data: products.rows });
+});
 
-const getProductById = async (req, res) => {
+const getProductById = asyncWrapper(async (req, res) => {
   const { productId } = req.params;
-  try {
-    const product = await Product.findByPk(productId);
-    if (!product)
-      return res.status(404).json({ message: "Product not found!" });
-    return res.status(200).json(product);
-  } catch (error) {
-    return res.status(500).json({ message: "Internal server error!" });
-  }
-};
+  const product = await Product.findByPk(productId);
+  if (!product)
+    throw new ApiError(StatusCodes.NOT_FOUND, "Products not found!");
+  res.status(StatusCodes.OK).json(product);
+});
 
-const createProduct = async (req, res) => {
+const createProduct = asyncWrapper(async (req, res) => {
   const {
     name,
     price,
@@ -95,34 +90,29 @@ const createProduct = async (req, res) => {
     category_id,
   } = req.body;
   let images;
-  try {
-    if (req.files) {
-      images = await uploadMultipleImage(req.files, {
-        folder: "products",
-        resource_type: "image",
-      });
-    }
-    const product = await Product.create({
-      name,
-      price,
-      description,
-      color,
-      quantity,
-      brand,
-      sold,
-      images,
-      category_id,
+  if (req.files) {
+    images = await uploadMultipleImage(req.files, {
+      folder: "products",
+      resource_type: "image",
     });
-    return res
-      .status(201)
-      .json({ message: "Product created successfully!", data: product });
-  } catch (error) {
-    console.log(error)
-    return res.status(500).json({ message: "Internal server error!" });
   }
-};
+  const product = await Product.create({
+    name,
+    price,
+    description,
+    color,
+    quantity,
+    brand,
+    sold,
+    images,
+    category_id,
+  });
+  res
+    .status(StatusCodes.OK)
+    .json({ message: "Product created successfully!", data: product });
+});
 
-const updateProductById = async (req, res) => {
+const updateProductById = asyncWrapper(async (req, res) => {
   const { productId } = req.params;
   const {
     name,
@@ -134,63 +124,51 @@ const updateProductById = async (req, res) => {
     brand,
     categoryName,
   } = req.body;
-  console.log(req.body)
   let images;
 
-  try {
-    const category = await Category.findOne({ where: { name: categoryName } });
-    if (!category)
-      return res.status(404).json({ message: "Category not found!" });
+  const category = await Category.findOne({ where: { name: categoryName } });
+  if (!category)
+    throw new ApiError(StatusCodes.NOT_FOUND, "Category not found!");
 
-    const product = await Product.findByPk(productId);
-    if (!product)
-      return res.status(404).json({ message: "Product not found!" });
+  const product = await Product.findByPk(productId);
+  if (!product) throw new ApiError(StatusCodes.NOT_FOUND, "Product not found!");
 
-    //delete old image on cloud
-    if (product.images) await deleteMutipleImages(product.images, "products");
+  //delete old image on cloud
+  if (product.images) await deleteMutipleImages(product.images, "products");
 
-    if (req.files) {
-      images = await uploadMultipleImage(req.files, {
-        folder: "products",
-        resource_type: "image",
-      });
-    }
-
-    await product.update({
-      name,
-      price,
-      description,
-      color,
-      quantity,
-      sold,
-      brand,
-      images,
-      category_id: category.id,
+  if (req.files) {
+    images = await uploadMultipleImage(req.files, {
+      folder: "products",
+      resource_type: "image",
     });
-
-    return res
-      .status(200)
-      .json({ message: "Product updated successfully!", data: product });
-  } catch (error) {
-    console.log(error)
-    return res.status(500).json({ message: "Internal server error!" });
   }
-};
 
-const deleteProductById = async (req, res) => {
+  await product.update({
+    name,
+    price,
+    description,
+    color,
+    quantity,
+    sold,
+    brand,
+    images,
+    category_id: category.id,
+  });
+
+  res
+    .status(StatusCodes.OK)
+    .json({ message: "Product updated successfully!", data: product });
+});
+
+const deleteProductById = asyncWrapper(async (req, res) => {
   const { productId } = req.params;
-  try {
-    const product = await Product.findByPk(productId);
+  const product = await Product.findByPk(productId);
 
-    if (!product)
-      return res.status(404).json({ message: "Product not found!" });
+  if (!product) throw new ApiError(StatusCodes.NOT_FOUND, "Product not found!");
 
-    await product.destroy();
-    return res.status(200).json({ message: "Product deleted successfully!" });
-  } catch (error) {
-    return res.status(500).json({ message: "Internal server error!" });
-  }
-};
+  await product.destroy();
+  res.status(StatusCodes.OK).json({ message: "Product deleted successfully!" });
+});
 
 export {
   getProducts,

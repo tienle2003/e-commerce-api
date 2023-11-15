@@ -76,11 +76,10 @@ const saveToken = async (userId, token, expiresAt) => {
       where: { user_id: userId },
     });
     if (existedRefreshToken) {
-      const updated = await existedRefreshToken.update({
+      await existedRefreshToken.update({
         token: token,
         expires_at: expiresAt,
       });
-      if (updated) console.log("success");
     } else {
       const sql = {
         user_id: userId,

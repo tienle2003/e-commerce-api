@@ -1,69 +1,62 @@
 import Cart from "../models/cart.js";
 import Product from "../models/product.js";
+import asyncWrapper from "../utils/asyncWrapper.js";
+import ApiError from "../utils/apiError.js";
+import { StatusCodes } from "http-status-codes";
 
-const addToCart = async (req, res) => {
+const addToCart = asyncWrapper(async (req, res) => {
   const { userId } = req.user;
   const { productId, quantity } = req.body;
-  try {
-    const cartItem = await Cart.findOne({
-      where: {
-        user_id: userId,
-        product_id: productId,
-      },
+  const cartItem = await Cart.findOne({
+    where: {
+      user_id: userId,
+      product_id: productId,
+    },
+  });
+  if (cartItem) {
+    cartItem.quantity += quantity;
+    await cartItem.save();
+  } else {
+    await Cart.create({
+      user_id: userId,
+      product_id: productId,
+      quantity,
     });
-    if (cartItem) {
-      cartItem.quantity += quantity;
-      await cartItem.save();
-    } else {
-      await Cart.create({
-        user_id: userId,
-        product_id: productId,
-        quantity,
-      });
-    }
-    return res
-      .status(201)
-      .json({ message: "product is added to the cart successfully" });
-  } catch (error) {
-    return res.status(500).json({ message: "Internal server error!" });
   }
-};
+  return res
+    .status(StatusCodes.CREATED)
+    .json({ message: "product is added to the cart successfully" });
+});
 
-const getCarts = async (req, res) => {
-  try {
-    const cartItems = await Cart.findAll({
-      where: {
-        user_id: req.user.userId,
+const getCarts = asyncWrapper(async (req, res) => {
+  const cartItems = await Cart.findAll({
+    where: {
+      user_id: req.user.userId,
+    },
+    include: [
+      {
+        model: Product,
+        as: "product",
+        attributes: ["name", "price", "color", "images"],
       },
-      include: [
-        {
-          model: Product,
-          as: "product",
-          attributes: ["name", "price", "color", "images"],
-        },
-      ],
-      attributes: ["id", "quantity"],
-    });
-    if (cartItems.length === 0)
-      return res
-        .status(404)
-        .json({ message: "can not find any product in the cart" });
-    return res.status(200).json({ data: cartItems });
-  } catch (error) {
-    return res.status(500).json({ message: "Internal server error!" });
-  }
-};
+    ],
+    attributes: ["id", "quantity"],
+  });
+  if (cartItems.length === 0)
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      "can not find any product in the cart"
+    );
+  return res.status(StatusCodes.OK).json({ data: cartItems });
+});
 
-const deleteCartById = async (req, res) => {
-  try {
-    console.log(typeof req.params.cartId)
-    await Cart.destroy({
-      where: { id: req.params.cartId, user_id: req.user.userId },
-    });
-    return res.status(200).json({
-      message: "product has been deleted from the cart successfully",
-    });
-  } catch (error) {}
-};
+const deleteCartById = asyncWrapper(async (req, res) => {
+  await Cart.destroy({
+    where: { id: req.params.cartId, user_id: req.user.userId },
+  });
+  return res.status(StatusCodes.OK).json({
+    message: "product has been deleted from the cart successfully",
+  });
+});
 
 export { addToCart, getCarts, deleteCartById };
