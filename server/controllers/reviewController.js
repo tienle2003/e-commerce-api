@@ -2,7 +2,7 @@ import sequelize from "../configs/configDatabase.js";
 import Review from "../models/review.js";
 import User from "../models/user.js";
 import asyncWrapper from "../utils/asyncWrapper.js";
-import ApiError from "../utils/apiError.js";
+import ApiError from "../utils/ApiError.js";
 import { StatusCodes } from "http-status-codes";
 
 const getReviews = asyncWrapper(async (req, res) => {

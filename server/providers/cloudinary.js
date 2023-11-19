@@ -1,12 +1,14 @@
 import { cloudinary } from "../configs/cloudinary.config.js";
+import ApiError from "../utils/ApiError.js";
+import { StatusCodes } from "http-status-codes";
 
 const uploadSingleImage = async (path, options) => {
   try {
     const result = await cloudinary.uploader.upload(path, options);
     return result;
+    
   } catch (error) {
-    console.error("Error uploading image to Cloudinary!", error);
-    throw error;
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Error uploading image to Cloudinary!");
   }
 };
 
@@ -20,10 +22,10 @@ const uploadMultipleImage = async (files, options) => {
     }
     if (imageUrlList.length === 0) return null;
     if (imageUrlList.length === 1) return imageUrlList[0];
+
     return imageUrlList;
   } catch (error) {
-    console.error("Error uploading image to Cloudinary!", error);
-    throw error;
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Error uploading image to Cloudinary!");
   }
 };
 
@@ -33,8 +35,7 @@ const deleteSingleImage = async (image, folderName) => {
     if (publicId)
       await cloudinary.uploader.destroy(`${folderName}/${publicId}`);
   } catch (error) {
-    console.error("Error deleting image to Cloudinary!", error, 1);
-    throw error;
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Error deleting image to Cloudinary!");
   }
 };
 
@@ -47,8 +48,7 @@ const deleteMutipleImages = async (imageUrlList, folderName) => {
     });
     await cloudinary.api.delete_resources(publicId);
   } catch (error) {
-    console.error("Error deleting image to Cloudinary!", error, 2);
-    throw error;
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Error deleting image to Cloudinary!");
   }
 };
 export {

@@ -1,5 +1,6 @@
 import Joi from "joi";
-// import path from "path";
+import ApiError from "../utils/ApiError.js";
+import { StatusCodes } from "http-status-codes";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -32,7 +33,8 @@ const { value: env, error } = envSchema
   .prefs({ errors: { label: "key" } })
   .validate(process.env);
 
-if (error) console.log(error.message);
+if (error)
+  throw new ApiError(StatusCodes.NOT_FOUND, "config validation error!");
 
 export default {
   port: env.PORT,

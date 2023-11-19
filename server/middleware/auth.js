@@ -1,60 +1,58 @@
 import Jwt from "jsonwebtoken";
 import config from "../configs/config.js";
-
+import ApiError from "../utils/ApiError.js";
+import StatusCodes from "http-status-codes";
 
 const verifyAccessToken = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer "))
-    return res.status(401).json({ message: "No token provided!" });
-  const accessToken = authHeader.split(" ")[1];
   try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer "))
+      throw new ApiError(StatusCodes.UNAUTHORIZED, "No token provided!");
+    const accessToken = authHeader.split(" ")[1];
     const decoded = Jwt.verify(accessToken, config.jwt.accessTokenSecret);
     req.user = decoded;
     next();
   } catch (err) {
-    return res.status(401).json(err);
+    next(err);
   }
 };
 
 const verifyRefreshToken = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer "))
-    return res.status(401).json({ message: "No token provided!" });
-  const refreshToken = authHeader.split(" ")[1];
   try {
-    const decoded = Jwt.verify(refreshToken, config.jwt.refreshTokenSecret);
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer "))
+      throw new ApiError(StatusCodes.UNAUTHORIZED, "No token provided!");
+    const accessToken = authHeader.split(" ")[1];
+    const decoded = Jwt.verify(accessToken, config.jwt.refreshTokenSecret);
     req.user = decoded;
     next();
   } catch (err) {
-    throw err;
+    next(err);
   }
 };
 
 const verifyUser = (req, res, next) => {
-  verifyAccessToken(req, res, () => {
+  verifyAccessToken(req, res, (err) => {
+    if (err) return next(err);
+
     if (req.user.role !== "user")
-      return res
-        .status(403)
-        .json({ message: "Unauthorized: Only user is allowed!" });
+      return next(new ApiError(StatusCodes.FORBIDDEN, "Only user is allowed!"));
+    
     next();
   });
 };
 
 const verifyAdmin = (req, res, next) => {
-  verifyAccessToken(req, res, () => {
+  verifyAccessToken(req, res, (err) => {
+    if (err) next(err);
+
     if (req.user.role !== "admin")
-      return res
-        .status(403)
-        .json({ message: "Unauthorized: Only admin is allowed!" });
+      next(new ApiError(StatusCodes.FORBIDDEN, "Only admin is allowed!"));
+    
     next();
   });
 };
 
-
-export {
-  verifyAccessToken,
-  verifyRefreshToken,
-  verifyUser,
-  verifyAdmin,
-};
+export { verifyAccessToken, verifyRefreshToken, verifyUser, verifyAdmin };

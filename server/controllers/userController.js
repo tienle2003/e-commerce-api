@@ -1,7 +1,7 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import asyncWrapper from "../utils/asyncWrapper.js";
-import ApiError from "../utils/apiError.js";
+import ApiError from "../utils/ApiError.js";
 import { StatusCodes } from "http-status-codes";
 import { hashPassword } from "../services/tokenService.js";
 import {

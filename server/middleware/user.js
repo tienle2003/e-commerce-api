@@ -1,6 +1,6 @@
 import sizeOf from "image-size";
 import { StatusCodes } from "http-status-codes";
-import ApiError from "../utils/apiError.js";
+import ApiError from "../utils/ApiError.js";
 
 const verifyImage = (req, res, next) => {
   const allowedExtentions = ["jpg", "png", "gif"];

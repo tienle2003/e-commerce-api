@@ -2,30 +2,40 @@ import refreshToken from "../models/refreshToken.js";
 import Jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import config from "../configs/config.js";
+import ApiError from "../utils/ApiError.js";
+import { StatusCodes } from "http-status-codes";
 
 const generateToken = async (payload, secret, expires) => {
-  return Jwt.sign(payload, secret, { expiresIn: expires });
+  try {
+    return Jwt.sign(payload, secret, { expiresIn: expires });
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message);
+  }
 };
 
 const generateAuthToken = async (user) => {
-  const payload = {
-    userId: user.id,
-    role: user.role,
-    email: user.email,
-  };
-  const accessToken = await generateToken(
-    { ...payload, type: "access token" },
-    config.jwt.accessTokenSecret,
-    config.jwt.accessTokenExpires
-  );
-  const refreshToken = await generateToken(
-    { ...payload, type: "refresh token" },
-    config.jwt.refreshTokenSecret,
-    config.jwt.refreshTokenExpires
-  );
-  const expiresAt = Date.now() + config.jwt.refreshTokenExpires * 1000;
-  saveToken(user.id, refreshToken, expiresAt);
-  return { accessToken, refreshToken };
+  try {
+    const payload = {
+      userId: user.id,
+      role: user.role,
+      email: user.email,
+    };
+    const accessToken = await generateToken(
+      { ...payload, type: "access token" },
+      config.jwt.accessTokenSecret,
+      config.jwt.accessTokenExpires
+    );
+    const refreshToken = await generateToken(
+      { ...payload, type: "refresh token" },
+      config.jwt.refreshTokenSecret,
+      config.jwt.refreshTokenExpires
+    );
+    const expiresAt = Date.now() + config.jwt.refreshTokenExpires * 1000;
+    await saveToken(user.id, refreshToken, expiresAt);
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message);
+  }
 };
 
 const generateVerifyEmailToken = async (user) => {
@@ -90,7 +100,7 @@ const saveToken = async (userId, token, expiresAt) => {
       if (newRefreshToken) console.log("Refresh token saved to the database");
     }
   } catch (error) {
-    console.error("Inserting data error in server!");
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message);
   }
 };
 
@@ -101,7 +111,10 @@ const deleteToken = async (userId, token) => {
     });
     if (destroyed) console.log("Refresh token deleted successfully");
   } catch (error) {
-    console.error("Error deleting token:", error);
+    throw new ApiError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      error.message
+    );
   }
 };
 
@@ -110,9 +123,8 @@ const hashPassword = async (password) => {
     const salt = await bcrypt.genSalt(parseInt(config.jwt.salt));
     const hashedPassword = await bcrypt.hash(password, salt);
     return hashedPassword;
-  } catch (err) {
-    console.log(err);
-    throw new Error("Error for hashing password!");
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message);
   }
 };
 

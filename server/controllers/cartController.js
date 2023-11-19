@@ -1,7 +1,7 @@
 import Cart from "../models/cart.js";
 import Product from "../models/product.js";
 import asyncWrapper from "../utils/asyncWrapper.js";
-import ApiError from "../utils/apiError.js";
+import ApiError from "../utils/ApiError.js";
 import { StatusCodes } from "http-status-codes";
 
 const addToCart = asyncWrapper(async (req, res) => {

@@ -5,7 +5,7 @@ import User from "../models/user.js";
 import refreshToken from "../models/refreshToken.js";
 import { sendVerifyEmail, sendResetPassword } from "../providers/nodemailer.js";
 import asyncWrapper from "../utils/asyncWrapper.js";
-import ApiError from "../utils/apiError.js";
+import ApiError from "../utils/ApiError.js";
 import { StatusCodes } from "http-status-codes";
 
 import {

@@ -1,6 +1,6 @@
 import Joi from "joi";
 import pick from "../utils/pick.js";
-import ApiError from "../utils/apiError.js";
+import ApiError from "../utils/ApiError.js";
 import { StatusCodes } from "http-status-codes";
 
 const validate = (schema) => async (req, res, next) => {
