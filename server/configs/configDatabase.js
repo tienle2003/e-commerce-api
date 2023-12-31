@@ -1,13 +1,12 @@
 import Sequelize from "sequelize";
-import dotenv from "dotenv";
-dotenv.config();
+import config from "./config.js";
 
 const sequelize = new Sequelize(
-  process.env.DB_SCHEMA,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
+  config.database.schema,
+  config.database.user,
+  config.database.password,
   {
-    host: process.env.DB_HOST,
+    host: config.database.host,
     dialect: "mysql",
     logging: false,
   }
@@ -19,6 +18,7 @@ const connection = async () => {
     console.log("Connection has been established successfully.");
   } catch (error) {
     console.error("Unable to connect to the database:", error);
+    
   }
 };
 
