@@ -4,8 +4,10 @@ import initRoutes from "./routes/index.js";
 import sequelize from "../server/configs/configDatabase.js";
 import config from "./configs/config.js";
 import errorHandler from "./middleware/error.js";
+import "./providers/passport.js"
 const port = config.port || 5000;
 const app = express();
+
 
 app.use(express.json());
 app.use(cors());
