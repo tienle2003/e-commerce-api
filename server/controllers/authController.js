@@ -16,8 +16,6 @@ import {
   generateAuthToken,
   hashPassword,
 } from "../services/tokenService.js";
-import dotenv from "dotenv";
-dotenv.config();
 
 const register = asyncWrapper(async (req, res) => {
   const { name, email, password } = req.body;
@@ -160,9 +158,7 @@ const forgotPassword = asyncWrapper(async (req, res) => {
 
   await sendResetPassword(resetPasswordToken, { email, name: user.name });
 
-   res
-    .status(StatusCodes.OK)
-    .json({ message: "Email sent successfully" });
+  res.status(StatusCodes.OK).json({ message: "Email sent successfully" });
 });
 
 const resetPassword = asyncWrapper(async (req, res) => {
