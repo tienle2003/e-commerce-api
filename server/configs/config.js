@@ -2,7 +2,8 @@ import Joi from "joi";
 import ApiError from "../utils/ApiError.js";
 import { StatusCodes } from "http-status-codes";
 import dotenv from "dotenv";
-dotenv.config();
+import * as path from "path";
+dotenv.config({ path: path.join(path.dirname.name, "../../.env") });
 
 const envSchema = Joi.object()
   .keys({
@@ -26,6 +27,8 @@ const envSchema = Joi.object()
     EMAIL_PASSWORD: Joi.string().required(),
     EMAIL_USERNAME: Joi.string().required(),
     EMAIL_PORT: Joi.number().required(),
+    GOOGLE_CLENT_ID: Joi.string().required(),
+    GOOGLE_CLIENT_SECRET: Joi.string().required(),
   })
   .unknown();
 
@@ -64,5 +67,9 @@ export default {
     username: env.EMAIL_USERNAME,
     password: env.EMAIL_PASSWORD,
     port: env.EMAIL_PORT,
+  },
+  google: {
+    clientId: env.GOOGLE_CLENT_ID,
+    secretId: env.GOOGLE_CLIENT_SECRET,
   },
 };

@@ -1,4 +1,3 @@
-import sequelize from "../configs/configDatabase.js";
 import Review from "../models/review.js";
 import User from "../models/user.js";
 import asyncWrapper from "../utils/asyncWrapper.js";
