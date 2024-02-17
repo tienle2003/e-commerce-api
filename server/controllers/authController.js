@@ -161,7 +161,7 @@ const forgotPassword = asyncWrapper(async (req, res) => {
   res.status(StatusCodes.OK).json({ message: "Email sent successfully" });
 });
 
-const resetPassword = asyncWrapper(async (req, res) => {
+const resetPassword = asyncWrapper(async (req, res, next) => {
   const { password } = req.body;
   const resetPasswordToken = req.query.token;
   Jwt.verify(
@@ -169,7 +169,7 @@ const resetPassword = asyncWrapper(async (req, res) => {
     config.jwt.resetTokenSecret,
     async (err, decoded) => {
       if (err) {
-        throw new ApiError(StatusCodes.GONE, "token has expired or invalid");
+        next(new ApiError(StatusCodes.GONE, "token has expired or invalid"));
       }
 
       const hashedPassword = await hashPassword(password);
@@ -182,7 +182,7 @@ const resetPassword = asyncWrapper(async (req, res) => {
           },
         }
       );
-      res
+      return res
         .status(StatusCodes.OK)
         .json({ message: "Reset password successfully" });
     }

@@ -9,7 +9,7 @@ passport.use(
     {
       clientID: config.google.clientId,
       clientSecret: config.google.secretId,
-      callbackURL: "/api/v1/auth/google/callback",
+      callbackURL: "http://localhost:3000/api/v1/auth/google/callback",
     },
     async function (accessToken, profile, cb) {
       try {
@@ -25,8 +25,9 @@ passport.use(
           },
         });
         return cb(err, profile);
-      } catch (error) {}
-      console.log(error);
+      } catch (error) {
+        console.log(error);
+      }
     }
   )
 );

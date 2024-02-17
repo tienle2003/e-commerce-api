@@ -29,6 +29,8 @@ const envSchema = Joi.object()
     EMAIL_PORT: Joi.number().required(),
     GOOGLE_CLENT_ID: Joi.string().required(),
     GOOGLE_CLIENT_SECRET: Joi.string().required(),
+    REDIS_HOST: Joi.string().required(),
+    REDIS_PORT: Joi.number().required(),
   })
   .unknown();
 
@@ -37,7 +39,7 @@ const { value: env, error } = envSchema
   .validate(process.env);
 
 if (error)
-  throw new ApiError(StatusCodes.NOT_FOUND, "config validation error!");
+  throw new ApiError(StatusCodes.NOT_FOUND, `config validation error: ${error.message}`);
 
 export default {
   port: env.PORT,
@@ -72,4 +74,8 @@ export default {
     clientId: env.GOOGLE_CLENT_ID,
     secretId: env.GOOGLE_CLIENT_SECRET,
   },
+  redis: {
+    host: env.REDIS_HOST,
+    port: env.REDIS_PORT,
+  }
 };
