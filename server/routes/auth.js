@@ -11,7 +11,6 @@ import passport from "passport";
 import { verifyRefreshToken } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
 import { authValidation } from "../validations/authValidation.js";
-import rateLimiter from "../middleware/rateLimiter.js";
 import express from "express";
 const router = express.Router();
 
@@ -23,13 +22,7 @@ router
 router
   .route("/reset-password")
   .put(validate(authValidation.resetPassword), resetPassword);
-router
-  .route("/login")
-  .post(
-    validate(authValidation.login),
-    // rateLimiter({ time: 5*60, limit: 5 }),
-    login
-  );
+router.route("/login").post(validate(authValidation.login), login);
 router.route("/logout").post(verifyRefreshToken, logout);
 router.route("/refresh").post(refresh);
 router.get(

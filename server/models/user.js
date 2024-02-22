@@ -1,6 +1,7 @@
 import sequelize from "../configs/configDatabase.js";
 import { DataTypes } from "sequelize";
-
+import bcrypt from "bcrypt";
+import config from "../configs/config.js";
 const User = sequelize.define(
   "User",
   {
@@ -53,6 +54,15 @@ const User = sequelize.define(
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
+    hooks: {
+      beforeSave: async (user, options) => {
+        if (user.changed("password")) {
+          const salt = await bcrypt.genSalt(parseInt(config.jwt.salt));
+          const hashedPassword = await bcrypt.hash(user.password, salt);
+          user.password = hashedPassword;
+        }
+      },
+    },
   }
 );
 

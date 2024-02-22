@@ -23,7 +23,7 @@ router
   )
   .post(
     verifyAdmin,
-    validate(productValidation.updateProduct),
+    // validate(productValidation.updateProduct),
     fileUploader.array("images", 5),
     verifyImage,
     updateProductById
@@ -34,7 +34,7 @@ router
   .get(validate(productValidation.getProducts), getProducts)
   .post(
     verifyAdmin,
-    validate(productValidation.createProduct),
+    // validate(productValidation.createProduct),
     fileUploader.array("images", 5),
     verifyImage,
     createProduct

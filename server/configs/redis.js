@@ -7,10 +7,8 @@ const redisConfig = {
 };
 
 const redisClient = createClient({
-  socket: {
-    host: redisConfig.HOST,
-    port: redisConfig.PORT,
-  },
+    host: config.redis.host,
+    port: config.redis.port,
 });
 
 (async () => {

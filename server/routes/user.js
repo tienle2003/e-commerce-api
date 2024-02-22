@@ -1,7 +1,7 @@
 import express from "express";
 import {
-  getUserByToken,
-  updateUserByToken,
+  getCurrentUser,
+  updateCurrentUser,
   changePassword,
   getAllUsers,
   getUserById,
@@ -18,12 +18,12 @@ const router = express.Router();
 router.use(verifyAccessToken);
 router
   .route("/me")
-  .get(getUserByToken)
+  .get(getCurrentUser)
   .put(
     validate(userValidation.updateCurrentUser),
     fileUploader.single("avatar"),
     verifyImage,
-    updateUserByToken
+    updateCurrentUser
   )
   .post(validate(userValidation.changePassword), changePassword);
 

@@ -3,31 +3,29 @@ import bcrypt from "bcrypt";
 import asyncWrapper from "../utils/asyncWrapper.js";
 import ApiError from "../utils/ApiError.js";
 import { StatusCodes } from "http-status-codes";
-import { hashPassword } from "../services/tokenService.js";
 import {
   uploadSingleImage,
   deleteSingleImage,
 } from "../providers/cloudinary.js";
 
-const getUserByToken = asyncWrapper(async (req, res) => {
-  const userId = req.user.id;
-  const user = await User.findByPk(userId, {
-    attributes: { exclude: ["password"] },
-  });
+import userService from "../services/userService.js";
+
+const getCurrentUser = asyncWrapper(async (req, res) => {
+  const { userId } = req.user;
+  const user = await userService.getUserById(userId);
   if (!user) throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
   res.status(StatusCodes.OK).json(user);
 });
 
-const updateUserByToken = asyncWrapper(async (req, res) => {
-  const userId = req.user.userId;
-  const { name, birthDate, address, phone } = req.body;
+const updateCurrentUser = asyncWrapper(async (req, res) => {
+  const { userId } = req.user;
+  const { birthDate, ...other } = req.body;
   let avatar = null;
 
-  const user = await User.findByPk(userId, {
-    attributes: { exclude: ["password"] },
-  });
-
+  let user = await userService.getUserById(userId);
   if (!user) throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
+  // delete old image on clound
+  await deleteSingleImage(user.avatar, "avatar");
 
   if (req.file) {
     const result = await uploadSingleImage(req.file.path, {
@@ -37,15 +35,10 @@ const updateUserByToken = asyncWrapper(async (req, res) => {
     avatar = result.secure_url;
   }
 
-  //delete old image on clound
-  await deleteSingleImage(user.avatar);
-
-  await user.update({
-    name,
-    avatar,
+  user = await userService.updateUserById(userId, {
+    ...other,
     birth_date: birthDate,
-    address,
-    phone,
+    avatar,
   });
 
   res.status(StatusCodes.OK).json({ message: "Update sucess", data: user });
@@ -53,15 +46,12 @@ const updateUserByToken = asyncWrapper(async (req, res) => {
 
 const changePassword = asyncWrapper(async (req, res) => {
   const { email, currentPassword, newPassword } = req.body;
-  const user = await User.findOne({ where: { email } });
-  if (!user) throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
+  const user = await userService.getUserByEmail(email);
   const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
 
   if (!isPasswordValid)
     throw new ApiError(StatusCodes.UNAUTHORIZED, "Incorrect current password!");
-
-  const hashedPassword = await hashPassword(newPassword);
-  user.password = hashedPassword;
+  user.password = newPassword;
   user.save();
   res
     .status(StatusCodes.OK)
@@ -79,37 +69,30 @@ const getAllUsers = asyncWrapper(async (req, res) => {
 
 const getUserById = asyncWrapper(async (req, res) => {
   const { userId } = req.params;
-  const user = await User.findByPk(userId, {
-    attributes: { exclude: ["password"] },
-  });
+  const user = await userService.getUserById(userId);
   if (!user) throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
   res.status(StatusCodes.OK).json(user);
 });
 
 const deleteUserById = asyncWrapper(async (req, res) => {
   const { userId } = req.params;
-  const user = await User.findByPk(userId);
-
-  if (!user) throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
+  const deletedUser = await userService.deleteUserById(userId);
 
   //delete old image on cloud
-  await deleteSingleImage(user.avatar, "avatar");
-
-  await user.destroy();
+  await deleteSingleImage(deletedUser.avatar, "avatar");
 
   res.status(200).json({ message: "User deleted succesfully" });
 });
 
 const updateUserById = asyncWrapper(async (req, res) => {
   const { userId } = req.params;
-  const { name, birthDate, address, phone } = req.body;
+  const { birthDate, ...other } = req.body;
   let avatar = null;
 
-  const user = await User.findByPk(userId, {
-    attributes: { exclude: ["password"] },
-  });
-
+  let user = await userService.getUserById(userId);
   if (!user) throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
+  // delete old image on clound
+  await deleteSingleImage(user.avatar, "avatar");
 
   if (req.file) {
     const result = await uploadSingleImage(req.file.path, {
@@ -119,23 +102,18 @@ const updateUserById = asyncWrapper(async (req, res) => {
     avatar = result.secure_url;
   }
 
-  //delete old image on clound
-  await deleteSingleImage(user.avatar, "avatar");
-
-  await user.update({
-    name,
-    avatar,
+  user = await userService.updateUserById(userId, {
+    ...other,
     birth_date: birthDate,
-    address,
-    phone,
+    avatar,
   });
-  
+
   res.status(StatusCodes.OK).json({ message: "Update sucess", data: user });
 });
 
 export {
-  getUserByToken,
-  updateUserByToken,
+  getCurrentUser,
+  updateCurrentUser,
   changePassword,
   getAllUsers,
   getUserById,

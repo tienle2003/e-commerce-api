@@ -14,6 +14,7 @@ const rateLimiter =
       await redisClient.expire(ip, time);
     }
 
+    console.log(await redisClient.ttl(ip))
     if (requests > limit)
       next(
         new ApiError(

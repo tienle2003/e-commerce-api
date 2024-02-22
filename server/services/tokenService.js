@@ -1,6 +1,5 @@
 import refreshToken from "../models/refreshToken.js";
 import Jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
 import config from "../configs/config.js";
 import ApiError from "../utils/ApiError.js";
 import { StatusCodes } from "http-status-codes";
@@ -118,22 +117,11 @@ const deleteToken = async (userId, token) => {
   }
 };
 
-const hashPassword = async (password) => {
-  try {
-    const salt = await bcrypt.genSalt(parseInt(config.jwt.salt));
-    const hashedPassword = await bcrypt.hash(password, salt);
-    return hashedPassword;
-  } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message);
-  }
-};
-
 export {
   generateAccessToken,
   generateAuthToken,
   generateVerifyEmailToken,
   saveToken,
   deleteToken,
-  hashPassword,
   generateResetPasswordToken,
 };

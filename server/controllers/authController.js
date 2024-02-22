@@ -7,6 +7,7 @@ import { sendVerifyEmail, sendResetPassword } from "../providers/nodemailer.js";
 import asyncWrapper from "../utils/asyncWrapper.js";
 import ApiError from "../utils/ApiError.js";
 import { StatusCodes } from "http-status-codes";
+import userService from "../services/userService.js";
 
 import {
   deleteToken,
@@ -14,27 +15,15 @@ import {
   generateVerifyEmailToken,
   generateResetPasswordToken,
   generateAuthToken,
-  hashPassword,
 } from "../services/tokenService.js";
 
 const register = asyncWrapper(async (req, res) => {
   const { name, email, password } = req.body;
-  //check email exists or not
-  const existingUser = await User.findOne({
-    where: {
-      email: email,
-    },
-  });
 
-  if (existingUser)
-    throw new ApiError(StatusCodes.CONFLICT, "This email is aready in use!");
-
-  //create new user on database
-  const hashedPassword = await hashPassword(password);
-  const newUser = await User.create({
+  const newUser = await userService.createUser(email, {
     name,
     email,
-    password: hashedPassword,
+    password,
   });
 
   //generate new token
@@ -46,27 +35,24 @@ const register = asyncWrapper(async (req, res) => {
   res.status(StatusCodes.OK).json({ message: "Email sent successfully" });
 });
 
-const verify = asyncWrapper(async (req, res) => {
+const verify = asyncWrapper(async (req, res, next) => {
   const verifyEmailToken = req.query.token;
   Jwt.verify(
     verifyEmailToken,
     config.jwt.verifyTokenSecret,
     async (err, decoded) => {
-      if (err)
-        throw new ApiError(
-          StatusCodes.GONE,
-          "verification code has expired or invalid"
+      if (err) {
+        return next(
+          new ApiError(
+            StatusCodes.GONE,
+            "verification code has expired or invalid"
+          )
         );
+      }
+      console.log(decoded);
 
-      await User.update(
-        { verified: true },
-        {
-          where: {
-            email: decoded.email,
-            verified: false,
-          },
-        }
-      );
+      await userService.updateUserById(decoded.userId, { verified: true });
+
       res
         .status(StatusCodes.OK)
         .json({ message: "Email verified successfully" });
@@ -76,7 +62,7 @@ const verify = asyncWrapper(async (req, res) => {
 
 const login = asyncWrapper(async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ where: { email, verified: true } });
+  const user = await userService.getUserByEmail(email);
   if (!user)
     throw new ApiError(StatusCodes.UNAUTHORIZED, "Invalid email or password!");
   const passwordMatch = await bcrypt.compare(password, user.password);
@@ -133,7 +119,7 @@ const refresh = asyncWrapper(async (req, res) => {
           StatusCodes.UNAUTHORIZED,
           "Refresh token is invalid or has expired!"
         );
-      const user = await User.findByPk(decoded.userId);
+      const user = await userService.getUserById(decoded.userId);
       const newAccessToken = generateAccessToken(user);
       res
         .status(StatusCodes.CREATED)
@@ -149,9 +135,9 @@ const refresh = asyncWrapper(async (req, res) => {
 
 const forgotPassword = asyncWrapper(async (req, res) => {
   const { email } = req.body;
-  if (!email) return res.status(400).json({ error: "email is required." });
 
-  const user = await User.findOne({ where: { email } });
+  const user = await userService.getUserByEmail(email);
+
   if (!user) throw new ApiError(StatusCodes.NOT_FOUND, "user not found");
 
   const resetPasswordToken = await generateResetPasswordToken(user);
@@ -169,19 +155,11 @@ const resetPassword = asyncWrapper(async (req, res, next) => {
     config.jwt.resetTokenSecret,
     async (err, decoded) => {
       if (err) {
-        next(new ApiError(StatusCodes.GONE, "token has expired or invalid"));
+        return next(
+          new ApiError(StatusCodes.GONE, "token has expired or invalid")
+        );
       }
-
-      const hashedPassword = await hashPassword(password);
-      await User.update(
-        { password: hashedPassword },
-        {
-          where: {
-            email: decoded.email,
-            verified: true,
-          },
-        }
-      );
+      await userService.updateUserById(decoded.userId, { password });
       return res
         .status(StatusCodes.OK)
         .json({ message: "Reset password successfully" });

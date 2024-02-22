@@ -79,16 +79,6 @@ const getProductById = asyncWrapper(async (req, res) => {
 });
 
 const createProduct = asyncWrapper(async (req, res) => {
-  const {
-    name,
-    price,
-    description,
-    color,
-    quantity,
-    brand,
-    sold,
-    category_id,
-  } = req.body;
   let images;
   if (req.files) {
     images = await uploadMultipleImage(req.files, {
@@ -97,15 +87,8 @@ const createProduct = asyncWrapper(async (req, res) => {
     });
   }
   const product = await Product.create({
-    name,
-    price,
-    description,
-    color,
-    quantity,
-    brand,
-    sold,
+    ...req.body,
     images,
-    category_id,
   });
   res
     .status(StatusCodes.OK)
@@ -114,16 +97,7 @@ const createProduct = asyncWrapper(async (req, res) => {
 
 const updateProductById = asyncWrapper(async (req, res) => {
   const { productId } = req.params;
-  const {
-    name,
-    price,
-    description,
-    color,
-    quantity,
-    sold,
-    brand,
-    categoryName,
-  } = req.body;
+  const { categoryName, ...other } = req.body;
   let images;
 
   const category = await Category.findOne({ where: { name: categoryName } });
@@ -144,13 +118,7 @@ const updateProductById = asyncWrapper(async (req, res) => {
   }
 
   await product.update({
-    name,
-    price,
-    description,
-    color,
-    quantity,
-    sold,
-    brand,
+    ...other,
     images,
     category_id: category.id,
   });

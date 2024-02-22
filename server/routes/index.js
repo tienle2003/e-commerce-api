@@ -7,7 +7,7 @@ import cartRouter from "./cart.js";
 import rateLimiter from "../middleware/rateLimiter.js";
 
 const initRoutes = (app) => {
-  app.use("/api/v1/auth", rateLimiter({ time: 5 * 60, limit: 5 }), authRouter);
+  app.use("/api/v1/auth", rateLimiter({ time: 60, limit: 5 }), authRouter);
   app.use("/api/v1/users", userRouter);
   app.use("/api/v1/products", ProductRouter);
   app.use("/api/v1/reviews", reviewRouter);
