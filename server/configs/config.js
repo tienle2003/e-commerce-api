@@ -31,6 +31,7 @@ const envSchema = Joi.object()
     GOOGLE_CLIENT_SECRET: Joi.string().required(),
     REDIS_HOST: Joi.string().required(),
     REDIS_PORT: Joi.number().required(),
+    REDIS_URL: Joi.string().required(),
   })
   .unknown();
 
@@ -77,5 +78,6 @@ export default {
   redis: {
     host: env.REDIS_HOST,
     port: env.REDIS_PORT,
+    url: env.REDIS_URL,
   }
 };

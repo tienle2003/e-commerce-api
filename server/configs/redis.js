@@ -2,6 +2,7 @@ import { createClient } from "redis";
 import config from "./config.js";
 
 const redisClient = createClient({
+    url: config.redis.url,
     host: config.redis.host,
     port: config.redis.port,
 });

@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import config from "../configs/config.js";
 import Jwt from "jsonwebtoken";
-import User from "../models/user.js";
 import refreshToken from "../models/refreshToken.js";
 import { sendVerifyEmail, sendResetPassword } from "../providers/nodemailer.js";
 import asyncWrapper from "../utils/asyncWrapper.js";
