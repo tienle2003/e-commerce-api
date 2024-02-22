@@ -49,7 +49,6 @@ const verify = asyncWrapper(async (req, res, next) => {
           )
         );
       }
-      console.log(decoded);
 
       await userService.updateUserById(decoded.userId, { verified: true });
 

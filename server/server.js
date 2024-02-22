@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import redisClient from "./configs/redis.js";
 import initRoutes from "./routes/index.js";
 import sequelize from "../server/configs/configDatabase.js";
 import config from "./configs/config.js";

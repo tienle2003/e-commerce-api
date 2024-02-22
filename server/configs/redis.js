@@ -1,11 +1,6 @@
 import { createClient } from "redis";
 import config from "./config.js";
 
-const redisConfig = {
-  HOST: config.redis.host,
-  PORT: config.redis.port,
-};
-
 const redisClient = createClient({
     host: config.redis.host,
     port: config.redis.port,
